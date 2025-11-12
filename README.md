@@ -47,17 +47,32 @@ This configuration defines the *entire state* of the server, from the operating 
 
 This configuration is **actively under development**. The immediate goal is to finalize the base system setup and begin deploying services. The "Last Commit" badge at the top reflects the most recent progress.
 
-## Tech Stack
+## Tech Stack & Service Philosophy
 
-* **Operating System:** [NixOS](https://nixos.org/) (Unstable channel)
-* **Package Management:** [Nix Flakes](https://nixos.wiki/wiki/Flakes)
-* **Secret Management:** [Agenix](https://github.com/ryantm/agenix) (for handling credentials and API keys)
-* **Services (Planned):**
-    * [AdGuard Home](https://adguard.com/en/adguard-home.html) (Network-wide ad blocker)
-    * [Homepage](https://gethomepage.dev/) (Service dashboard)
-    * [Glances](https://nicolargo.github.io/glances/) (System monitoring)
-    * [Gitea](https://gitea.io/en-us/) (Self-hosted Git service)
-    * [Nginx](https://www.nginx.com/) (Reverse proxy)
+This stack is designed to be a comprehensive, self-hosted ecosystem. Services are provisioned declaratively using NixOS modules.
+
+### Core Infrastructure
+* **OS & Deployment:** `NixOS` (Unstable) + `Nix Flakes`
+* **Secret Management:** `Agenix` (for handling credentials and API keys)
+* **Networking (VPN):** `Wireguard` (for secure, remote access to the server and LAN)
+* **Reverse Proxy:** `Nginx` (to manage and secure web traffic to all services)
+* **Monitoring:** `Prometheus` + `Grafana` (Industry-standard metrics and visualization)
+* **Dashboard:** `Homepage` (A clean navigation portal for all services)
+* **DNS Filtering:** `Adguard Home` (Network-wide ad & tracker blocking)
+
+### Application Services (Planned)
+* **Password Management:** `Vaultwarden` (Bitwarden-compatible, lightweight server)
+* **Photo Management:** `Immich` (Google Photos alternative)
+* **File Storage (S3):** `MinIO` (S3-compatible object storage, great for cloud-native skills)
+* **File Storage (Drive):** `Nextcloud` (A full-featured Google Drive alternative)
+* **Git Server:** `Gitea` (Lightweight self-hosted Git service)
+* **Media Server:** `Jellyfin` (Self-hosted media streaming)
+* **System View:** `Glance` (Quick system resource monitoring)
+
+### Provisioning & Deployment (Planned)
+* **Initial Install:** `nix-infect` or `nix-anywhere` (for provisioning a non-NixOS machine)
+* **Remote Updates:** (e.g., `deploy-rs`, `colmena`, or custom shell scripts)
+
 
 ## Local Testing & Usage
 
