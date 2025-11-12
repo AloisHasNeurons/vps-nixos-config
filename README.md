@@ -2,13 +2,13 @@
   <a href="https://nixos.org/">
     <img src="https://img.shields.io/badge/NixOS-unstable-blue.svg?logo=nixos" alt="NixOS Unstable">
   </a>
-  <a href="https://github.com/AloisHasNeurons/vps-nixos-config/blob/main/LICENSE">
+  <a href="https://github.com/AloisHasNeurons/vps-nixos-config/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
   </a>
   <a href="https://nixos.org/">
     <img src="https://img.shields.io/badge/Built%20with-Nix-5277C3.svg?logo=nix" alt="Built with Nix">
   </a>
-  <a href="https://github.com/alois-vincent/vps-nixos-config/commits/main">
+  <a href="https://github.com/alois-vincent/vps-nixos-config/commits/master">
     <img src="https://img.shields.io/github/last-commit/AloisHasNeurons/vps-nixos-config" alt="Last Commit">
   </a>
   <a href="#">
@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <img src="https://github.com/AloisHasNeurons/vps-nixos-config/blob/main/.github/project_snippet.png?raw=true" alt="Project Snippet" width="700">
+  <img src="https://github.com/AloisHasNeurons/vps-nixos-config/blob/master/.github/project_snippet.png?raw=true" alt="Project Snippet" width="700">
 </p>
 
 <h1 align="center">Declarative NixOS VPS Configuration</h1>
