@@ -57,5 +57,15 @@
     packages = forEachSystem ({ pkgs }: {
       vps-vm = self.nixosConfigurations.vps.config.system.build.vm;
     });
+
+    devShells = forEachSystem ({ pkgs }: {
+      default = pkgs.mkShell {
+        packages = with pkgs; [
+          just
+          ssh
+          agenix.packages.${system}.default
+        ];
+      };
+    });
   };
 }
