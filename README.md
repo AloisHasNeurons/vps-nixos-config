@@ -81,12 +81,8 @@ This flake includes a `vps-vm` package that builds a local QEMU virtual machine.
 To build and run the VM locally:
 
 ```bash
-# 1. Build the VM package defined in flake.nix
-nix build .#vps-vm
-
-# 2. Run the VM
-# (This will launch QEMU and forward all specified ports)
-./result/bin/run-vps-vm
+# Build the VM package defined in flake.nix
+nix run .#vps-vm
 ```
 
 You can then access the VM via SSH or test its services: `ssh alois@localhost -p 2222`
