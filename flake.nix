@@ -48,6 +48,9 @@
                 { from = "host"; host.port = 3002; guest.port = 3002; } # Glance
                 { from = "host"; host.port = 8001; guest.port = 8000; } # Vaultwarden
               ];
+
+              # Use a dummy key for the VM since it cannot decrypt the real secret
+              networking.wireguard.interfaces.wg0.privateKeyFile = pkgs.lib.mkForce "${pkgs.writeText "dummy-wg-key" "YF5X5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q4="}";
             };
           })
         ];
