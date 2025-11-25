@@ -17,7 +17,11 @@
     enable = true;
     port = 3000;
     settings = {
+      http = {
+        address = "0.0.0.0:3000";
+      };
       dns = {
+        bind_hosts = [ "0.0.0.0" ];
         port = 53;
         upstream_dns = [ "1.1.1.1" "8.8.8.8" ];
       };
@@ -43,6 +47,7 @@
   # Homepage
   services.homepage-dashboard = {
     enable = true;
+    listenPort = 3001;
     settings = {
       title = "My Dashboard";
       services = [];
@@ -64,9 +69,18 @@
     };
   };
 
+  # Vaultwarden
+  services.vaultwarden = {
+    enable = true;
+    config = {
+      ROCKET_PORT = 8000;
+      ROCKET_ADDRESS = "0.0.0.0";
+    };
+  };
+
   # Firewall
   networking.firewall.allowedTCPPorts = [
-    22 80 443 8080 8443 3000 3001 3002 53
+    22 80 443 8080 8443 3000 3001 3002 53 8000
   ];
   networking.firewall.allowedUDPPorts = [ 51820 53 ];
 
@@ -116,8 +130,7 @@
     # ];
   };
 
-  # Make AdGuard Home listen on the WireGuard interface
-  services.adguardhome.settings.dns.bind_hosts = [ "0.0.0.0" "10.100.0.1" ]; # Add VPN IP
+
 
   # Console keyboard
   console.keyMap = "fr";

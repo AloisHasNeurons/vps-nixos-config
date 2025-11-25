@@ -46,6 +46,7 @@
                 { from = "host"; host.port = 3000; guest.port = 3000; } # AdGuard
                 { from = "host"; host.port = 3001; guest.port = 3001; } # Homepage
                 { from = "host"; host.port = 3002; guest.port = 3002; } # Glance
+                { from = "host"; host.port = 8001; guest.port = 8000; } # Vaultwarden
               ];
             };
           })
