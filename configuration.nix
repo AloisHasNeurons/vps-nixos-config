@@ -3,6 +3,14 @@
 { config, pkgs, inputs, ... }:
 
 {
+  imports = [
+    ./modules/adguard.nix
+    ./modules/homepage.nix
+    ./modules/nginx.nix
+    ./modules/vaultwarden.nix
+    ./modules/wireguard.nix
+  ];
+
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "/dev/vda";
   networking.hostName = "nixOS-25_05-4GB-nbg1-1";
@@ -10,49 +18,6 @@
 
   # Secrets
   age.secrets.wireguard-private-key.file = ./secrets/wireguard-private-key.age;
-
-
-  # AdGuard Home
-  services.adguardhome = {
-    enable = true;
-    port = 3000;
-    settings = {
-      http = {
-        address = "0.0.0.0:3000";
-      };
-      dns = {
-        bind_hosts = [ "0.0.0.0" ];
-        port = 53;
-        upstream_dns = [ "1.1.1.1" "8.8.8.8" ];
-      };
-    };
-  };
-
-  # Nginx Reverse Proxy
-  services.nginx = {
-    enable = true;
-    recommendedProxySettings = true;
-    recommendedOptimisation = true;
-    recommendedGzipSettings = true;
-
-    # Default catch-all
-    virtualHosts."localhost" = {
-      default = true;
-      extraConfig = ''
-        return 200 "Hello from Nginx!";
-      '';
-    };
-  };
-
-  # Homepage
-  services.homepage-dashboard = {
-    enable = true;
-    listenPort = 3001;
-    settings = {
-      title = "My Dashboard";
-      services = [];
-    };
-  };
 
   # Glance placeholder
   systemd.services.glance = let
@@ -66,15 +31,6 @@
       ExecStart = "${pkgs.python3}/bin/python3 -m http.server ${toString glancePort} --directory /tmp";
       WorkingDirectory = "/tmp";
       Restart = "always";
-    };
-  };
-
-  # Vaultwarden
-  services.vaultwarden = {
-    enable = true;
-    config = {
-      ROCKET_PORT = 8000;
-      ROCKET_ADDRESS = "0.0.0.0";
     };
   };
 
@@ -103,34 +59,6 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2uzDX8j0gCkpfmB+G9HU3PEEOGp02Nfh4FcIlQ+EWb alois.vincent@imt-atlantique.net"
     ];
   };
-
-  # Enable NAT for VPN traffic
-  networking.nat.enable = true;
-  networking.nat.externalInterface = "eth0"; # Use your VPS's main interface
-  networking.nat.internalInterfaces = [ "wg0" ];
-
-  networking.wireguard.interfaces.wg0 = {
-    ips = [ "10.100.0.1/24" ]; # Server's IP in the VPN
-    listenPort = 51820;
-    privateKeyFile = config.age.secrets.wireguard-private-key.path;
-
-    postSetup = ''
-      ${pkgs.iptables}/bin/iptables -A FORWARD -i wg0 -j ACCEPT
-    '';
-    postShutdown = ''
-      ${pkgs.iptables}/bin/iptables -D FORWARD -i wg0 -j ACCEPT
-    '';
-
-    # peers = [
-    #   # Pixel 9
-    #   {
-    #     publicKey = "{CLIENT_PUBLIC_KEY}"; # Replace with your phone's public key
-    #     allowedIPs = [ "10.100.0.2/32" ]; # IP assigned to your phone
-    #   }
-    # ];
-  };
-
-
 
   # Console keyboard
   console.keyMap = "fr";

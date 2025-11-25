@@ -51,23 +51,18 @@ This configuration is **actively under development**. The immediate goal is to f
 
 This stack is designed to be a comprehensive, self-hosted ecosystem. Services are provisioned declaratively using NixOS modules.
 
-### Core Infrastructure
-* **OS & Deployment:** `NixOS` (Unstable) + `Nix Flakes`
-* **Secret Management:** `Agenix` (for handling credentials and API keys)
-* **Networking (VPN):** `Wireguard` (for secure, remote access to the server and LAN)
-* **Reverse Proxy:** `Nginx` (to manage and secure web traffic to all services)
-* **Monitoring:** `Prometheus` + `Grafana` (Industry-standard metrics and visualization)
-* **Dashboard:** `Homepage` (A clean navigation portal for all services)
-* **DNS Filtering:** `Adguard Home` (Network-wide ad & tracker blocking)
+### Core Infrastructure & Services
 
-### Application Services (Planned)
-* **Password Management:** `Vaultwarden` (Bitwarden-compatible, lightweight server)
-* **Photo Management:** `Immich` (Google Photos alternative)
-* **File Storage (S3):** `MinIO` (S3-compatible object storage, great for cloud-native skills)
-* **File Storage (Drive):** `Nextcloud` (A full-featured Google Drive alternative)
-* **Git Server:** `Gitea` (Lightweight self-hosted Git service)
-* **Media Server:** `Jellyfin` (Self-hosted media streaming)
-* **System View:** `Glance` (Quick system resource monitoring)
+For detailed documentation on each service, please refer to [docs/services.md](./docs/services.md).
+
+*   **OS & Deployment:** `NixOS` (Unstable) + `Nix Flakes`
+*   **Secret Management:** `Agenix`
+*   **Networking (VPN):** `Wireguard`
+*   **Reverse Proxy:** `Nginx`
+*   **Monitoring:** `Prometheus` + `Grafana`
+*   **Dashboard:** `Homepage`
+*   **DNS Filtering:** `Adguard Home`
+*   **Password Management:** `Vaultwarden`
 
 ### Provisioning & Deployment (Planned)
 * **Initial Install:** `nix-infect` or `nix-anywhere` (for provisioning a non-NixOS machine)
