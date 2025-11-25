@@ -91,7 +91,7 @@ You can then access the VM via SSH or test its services: `ssh alois@localhost -p
 
 ## Roadmap
 
-* [ ] Implement base infrastructure: `Nginx`, `Wireguard`, and `Agenix`.
+* [x] Implement base infrastructure: `Nginx`, `Wireguard`, and `Agenix`.
 * [ ] Deploy initial utility services (`Homepage`, `Adguard`, `Vaultwarden`).
 * [ ] Configure `Prometheus` + `Grafana` for core system monitoring.
 * [ ] Deploy stateful services with persistent volumes (`Immich`, `Gitea`, `MinIO`).
