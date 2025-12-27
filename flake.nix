@@ -40,13 +40,13 @@
               virtualisation.cores = 2;
 
               virtualisation.forwardPorts = [
-                { from = "host"; host.port = 2222; guest.port = 22; } # SSH
-                { from = "host"; host.port = 8080; guest.port = 80; } # Web
-                { from = "host"; host.port = 8443; guest.port = 443; } # Web (SSL)
-                { from = "host"; host.port = 3000; guest.port = 3000; } # AdGuard
-                { from = "host"; host.port = 3001; guest.port = 3001; } # Homepage
-                { from = "host"; host.port = 3002; guest.port = 3002; } # Glance
-                { from = "host"; host.port = 8001; guest.port = 8000; } # Vaultwarden
+                { from = "host"; host.port = 12222; guest.port = 22; } # SSH
+                { from = "host"; host.port = 18080; guest.port = 80; } # Web
+                { from = "host"; host.port = 18443; guest.port = 443; } # Web (SSL)
+                { from = "host"; host.port = 13000; guest.port = 3000; } # AdGuard
+                { from = "host"; host.port = 13001; guest.port = 3001; } # Homepage
+                { from = "host"; host.port = 13002; guest.port = 3002; } # Glance
+                { from = "host"; host.port = 18000; guest.port = 8000; } # Vaultwarden
               ];
 
               # Use a dummy key for the VM since it cannot decrypt the real secret
@@ -66,7 +66,7 @@
       default = pkgs.mkShell {
         packages = with pkgs; [
           just
-          ssh
+          openssh
           agenix.packages.${system}.default
         ];
       };

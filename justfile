@@ -3,9 +3,11 @@ default:
     @just --list
 
 # Build and run the VM
+nix := "/nix/var/nix/profiles/default/bin/nix"
+
 run-vm:
-    sudo nix run .#vps-vm
+    sudo {{nix}} run .#vps-vm
 
 # SSH into the running VM ignoring host keys
 ssh-vm:
-    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 2222 alois@localhost
+    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 12222 alois@localhost
