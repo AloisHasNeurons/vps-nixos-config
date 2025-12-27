@@ -36,7 +36,7 @@
 
   # Firewall
   networking.firewall.allowedTCPPorts = [
-    22 80 443 8080 8443 3000 3001 3002 53 8000
+    22 80 443 53
   ];
   networking.firewall.allowedUDPPorts = [ 51820 53 ];
 
@@ -57,6 +57,7 @@
     hashedPassword = "$6$Hnbk1NWUoP05TJ7K$QRaDPGY9KPZlZSHlR80JxC7NlLAKe.0RMWAZybobZHoPhVzrrdlqu9qFAwG6iRWBs2mgnBi6eIqvgHnmMxSH40";
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2uzDX8j0gCkpfmB+G9HU3PEEOGp02Nfh4FcIlQ+EWb alois.vincent@imt-atlantique.net"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
     ];
   };
 
