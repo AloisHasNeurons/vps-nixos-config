@@ -10,7 +10,7 @@
     # Define the domain for our services
     # In a real setup, this would be passed as a variable or defined in a higher-level config.
     virtualHosts = let
-      domain = "example.com";
+      domain = "crapadouille.fr";
     in {
       "adguard.${domain}" = {
         locations."/" = {
