@@ -9,4 +9,9 @@
       services = [];
     };
   };
+
+  # Fix for "Host validation failed" when behind a proxy
+  systemd.services.homepage-dashboard.environment = {
+    HOSTNAME = "0.0.0.0";
+  };
 }
