@@ -8,7 +8,7 @@
   <a href="https://nixos.org/">
     <img src="https://img.shields.io/badge/Built%20with-Nix-5277C3.svg?logo=nix" alt="Built with Nix">
   </a>
-  <a href="https://github.com/alois-vincent/vps-nixos-config/commits/master">
+  <a href="https://github.com/AloisHasNeurons/vps-nixos-config/commits/master">
     <img src="https://img.shields.io/github/last-commit/AloisHasNeurons/vps-nixos-config" alt="Last Commit">
   </a>
   <a href="#">
