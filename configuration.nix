@@ -13,6 +13,12 @@
 
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "/dev/vda";
+  
+  fileSystems."/" = {
+    device = "/dev/vda1";
+    fsType = "ext4";
+  };
+
   networking.hostName = "nixOS-25_05-4GB-nbg1-1";
   time.timeZone = "Europe/Paris";
 
