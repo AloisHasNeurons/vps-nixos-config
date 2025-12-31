@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: determinateSystems/nix-installer-action@v16
+      - uses: determinateSystems/magic-nix-cache-action@v8
+      - run: nix flake check
+
+  build:
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+      - uses: determinateSystems/nix-installer-action@v16
+      - uses: determinateSystems/magic-nix-cache-action@v8
+      - run: nix build .#nixosConfigurations.vps.config.system.build.toplevel
