@@ -18,12 +18,17 @@
       ${pkgs.iptables}/bin/iptables -D FORWARD -i wg0 -j ACCEPT
     '';
 
-    # peers = [
-    #   # Pixel 9
-    #   {
-    #     publicKey = "{CLIENT_PUBLIC_KEY}"; # Replace with your phone's public key
-    #     allowedIPs = [ "10.100.0.2/32" ]; # IP assigned to your phone
-    #   }
-    # ];
+    peers = [
+      # Laptop (Fedora)
+      {
+        publicKey = "geab3hfyFvpm+rSPAr5W37AGVXkDFRbwufmb+5O1QQ4=";
+        allowedIPs = [ "10.100.0.2/32" ];
+      }
+      # Phone (Pixel 9)
+      {
+        publicKey = "X8MbaQlE7j5P0H8JM2FvMstK6Z/vOctKYBOb7A66Rjw=";
+        allowedIPs = [ "10.100.0.3/32" ];
+      }
+    ];
   };
 }
