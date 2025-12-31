@@ -10,3 +10,5 @@ result-*
 
 # VM
 *.qcow2
+
+.vscode
