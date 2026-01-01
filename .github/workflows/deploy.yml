@@ -48,29 +48,16 @@ jobs:
       run: terraform init
       working-directory: ./terraform
 
+    - name: Set SSH Public Key Variable
+      # We read the public key from the repo and export it for Terraform to use
+      run: |
+        echo "TF_VAR_ssh_public_key=$(cat secrets/github-actions-deploy.pub)" >> $GITHUB_ENV
+
     - name: Terraform Apply
       run: terraform apply -auto-approve
       working-directory: ./terraform
       env:
         TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
-        # We need the SSH public key content again for Terraform
-        TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }} # User needs to add this too? 
-        # Actually, we can read it from the file in the repo?
-        # NO, main.tf expects a variable now.
-        # Check main.tf: variable "ssh_public_key" {}
-        # We can read it in the step and pass it env var.
-
-    # 4a. Pass Public Key to Terraform
-    # Since we changed main.tf to expect a variable, we have to provide it.
-    # The deploy key public part IS in the repo at secrets/github-actions-deploy.pub
-    # But wait, Terraform manages the USER'S key for root access usually.
-    # The 'default' key in terraform is used for bootstrapping.
-    # We should probably pass the deploy key OR the user's laptop key.
-    # For bootstrap, it doesn't matter much as long as ONE key works.
-    # Let's use the file content from the repo as the variable value.
-    - name: Set TF_VAR_ssh_public_key
-      run: |
-        echo "TF_VAR_ssh_public_key=$(cat secrets/github-actions-deploy.pub)" >> $GITHUB_ENV
 
     # 5. Deploy NixOS
     - name: Deploy NixOS
