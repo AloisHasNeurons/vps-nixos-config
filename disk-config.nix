@@ -7,6 +7,10 @@
         content = {
           type = "gpt";
           partitions = {
+            boot = {
+              size = "1M";
+              type = "EF02"; # for grub MBR
+            };
             ESP = {
               priority = 1;
               name = "ESP";
