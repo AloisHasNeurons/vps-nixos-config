@@ -61,26 +61,57 @@
     allowedUDPPorts = [ 53 ];
   };
 
-  # SSH
+  # SSH - HARDENED
   services.openssh = {
     enable = true;
     settings = {
-      PasswordAuthentication = true;
-      PermitRootLogin = "yes";
+      PasswordAuthentication = false;  # Keys only!
+      PermitRootLogin = "prohibit-password";  # Root can only use SSH keys
+      KbdInteractiveAuthentication = false;
+      X11Forwarding = false;
+      PermitEmptyPasswords = false;
+    };
+    # Extra hardening
+    extraConfig = ''
+      AllowUsers alois
+      MaxAuthTries 3
+      LoginGraceTime 20
+    '';
+  };
+
+  # Fail2ban - Block brute force attacks
+  services.fail2ban = {
+    enable = true;
+    maxretry = 3;
+    bantime = "1h";
+    bantime-increment = {
+      enable = true;
+      maxtime = "168h";  # Max 1 week ban
+      factor = "4";
     };
   };
 
-  # Users
-  users.users.root.hashedPassword = "$6$zMgGjQVPB.Mog2Km$XkLZ2L8iHg7D6m71uuW0pfFtR8VKocdgXStYTIe/xUuDnvnM85T83K44CXoibIVwHzxbjmgLOaIEhCsWtSV5z0";
+  # Users - SSH keys only, no password login
+  users.users.root = {
+    # No password - root can only login via SSH keys
+    hashedPassword = "!";  # Disabled password
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
+    ];
+  };
+  
   users.users.alois = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    hashedPassword = "$6$Hnbk1NWUoP05TJ7K$QRaDPGY9KPZlZSHlR80JxC7NlLAKe.0RMWAZybobZHoPhVzrrdlqu9qFAwG6iRWBs2mgnBi6eIqvgHnmMxSH40";
+    hashedPassword = "!";  # Disabled password - SSH keys only
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2uzDX8j0gCkpfmB+G9HU3PEEOGp02Nfh4FcIlQ+EWb alois.vincent@imt-atlantique.net"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
     ];
   };
+  
+  # Allow wheel users to sudo without password (since we can only login via SSH keys anyway)
+  security.sudo.wheelNeedsPassword = false;
 
   # Console keyboard
   console.keyMap = "fr";
