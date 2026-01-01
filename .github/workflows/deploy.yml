@@ -1,0 +1,89 @@
+name: "CD"
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    # Only deploy if CI checks passed (implicit, but good to know)
+    # environment: production # Optional: for manual approval rules
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # 1. Install Nix (for nixos-rebuild)
+    - uses: cachix/install-nix-action@v27
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+
+    # 2. Install Terraform
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    # 3. Setup SSH (for NixOS deployment)
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    
+    - name: Add Host Key to Known Hosts
+      # Adding the server as a known host to prevent interactive prompt
+      # We use ssh-keyscan on the IP output from Terraform
+      # Note: This has a small "TOFU" (Trust On First Use) security implication in CI
+      run: |
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+    
+    # 4. Apply Infrastructure (Terraform)
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./terraform
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+      working-directory: ./terraform
+      env:
+        TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
+        # We need the SSH public key content again for Terraform
+        TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }} # User needs to add this too? 
+        # Actually, we can read it from the file in the repo?
+        # NO, main.tf expects a variable now.
+        # Check main.tf: variable "ssh_public_key" {}
+        # We can read it in the step and pass it env var.
+
+    # 4a. Pass Public Key to Terraform
+    # Since we changed main.tf to expect a variable, we have to provide it.
+    # The deploy key public part IS in the repo at secrets/github-actions-deploy.pub
+    # But wait, Terraform manages the USER'S key for root access usually.
+    # The 'default' key in terraform is used for bootstrapping.
+    # We should probably pass the deploy key OR the user's laptop key.
+    # For bootstrap, it doesn't matter much as long as ONE key works.
+    # Let's use the file content from the repo as the variable value.
+    - name: Set TF_VAR_ssh_public_key
+      run: |
+        echo "TF_VAR_ssh_public_key=$(cat secrets/github-actions-deploy.pub)" >> $GITHUB_ENV
+
+    # 5. Deploy NixOS
+    - name: Deploy NixOS
+      run: |
+        # Get IP from Terraform output
+        cd terraform
+        SERVER_IP=$(terraform output -raw ipv4_address)
+        cd ..
+        
+        echo "Deploying to $SERVER_IP..."
+        
+        # Scan host key now that we have IP
+        ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+
+        # Run rebuild
+        nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --target-host root@$SERVER_IP
