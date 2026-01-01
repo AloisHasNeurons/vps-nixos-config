@@ -1,6 +1,15 @@
+terraform {
+  cloud {
+    organization = "AloisHasNeurons-Personal"
+    workspaces {
+      name = "vps-nixos"
+    }
+  }
+}
+
 resource "hcloud_ssh_key" "default" {
   name       = "terraform-deploy-key"
-  public_key = file(var.ssh_public_key_path)
+  public_key = var.ssh_public_key
 }
 
 resource "hcloud_server" "vps" {
@@ -20,6 +29,6 @@ resource "hcloud_server" "vps" {
     users:
       - name: root
         ssh_authorized_keys:
-          - ${file(var.ssh_public_key_path)}
+          - ${var.ssh_public_key}
   EOT
 }
