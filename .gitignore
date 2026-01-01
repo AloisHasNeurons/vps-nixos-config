@@ -11,4 +11,14 @@ result-*
 # VM
 *.qcow2
 
+# IDE
 .vscode
+
+# Environment variables
+.env
+
+# Terraform
+.terraform
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup

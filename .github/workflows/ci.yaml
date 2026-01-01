@@ -27,3 +27,15 @@ jobs:
       - uses: determinateSystems/nix-installer-action@v16
       - uses: determinateSystems/magic-nix-cache-action@v8
       - run: nix build .#nixosConfigurations.vps.config.system.build.toplevel
+
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive
+        working-directory: ./terraform
+      - run: terraform init -backend=false
+        working-directory: ./terraform
+      - run: terraform validate
+        working-directory: ./terraform
