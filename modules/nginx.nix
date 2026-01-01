@@ -1,9 +1,10 @@
-{ config, pkgs, ... }:
-
-let
-  domain = "crapadouille.fr";
-in
 {
+  config,
+  pkgs,
+  ...
+}: let
+  domain = "crapadouille.fr";
+in {
   # ACME (Let's Encrypt) configuration
   security.acme = {
     acceptTerms = true;
@@ -44,7 +45,7 @@ in
           proxyWebsockets = true;
         };
       };
-      
+
       # Default catch-all
       "localhost" = {
         default = true;

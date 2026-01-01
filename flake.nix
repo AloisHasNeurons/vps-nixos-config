@@ -27,9 +27,14 @@
   } @ inputs: let
     inherit (self) outputs;
     systems = ["x86_64-linux"];
-    forEachSystem = f: nixpkgs.lib.genAttrs systems (system: f {
-      pkgs = import nixpkgs { inherit system; config.allowUnfree = true; };
-    });
+    forEachSystem = f:
+      nixpkgs.lib.genAttrs systems (system:
+        f {
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+        });
   in {
     nixosConfigurations = {
       # --- VPS ---
@@ -43,20 +48,52 @@
           inputs.agenix.nixosModules.default
           # Disko
           disko.nixosModules.disko
-          ({ config, pkgs, ... }: {
+          ({
+            config,
+            pkgs,
+            ...
+          }: {
             virtualisation.vmVariant = {
               virtualisation.graphics = false;
               virtualisation.memorySize = 2048;
               virtualisation.cores = 2;
 
               virtualisation.forwardPorts = [
-                { from = "host"; host.port = 12222; guest.port = 22; } # SSH
-                { from = "host"; host.port = 18080; guest.port = 80; } # Web
-                { from = "host"; host.port = 18443; guest.port = 443; } # Web (SSL)
-                { from = "host"; host.port = 13000; guest.port = 3000; } # AdGuard
-                { from = "host"; host.port = 13001; guest.port = 3001; } # Homepage
-                { from = "host"; host.port = 13002; guest.port = 3002; } # Glance
-                { from = "host"; host.port = 18000; guest.port = 8000; } # Vaultwarden
+                {
+                  from = "host";
+                  host.port = 12222;
+                  guest.port = 22;
+                } # SSH
+                {
+                  from = "host";
+                  host.port = 18080;
+                  guest.port = 80;
+                } # Web
+                {
+                  from = "host";
+                  host.port = 18443;
+                  guest.port = 443;
+                } # Web (SSL)
+                {
+                  from = "host";
+                  host.port = 13000;
+                  guest.port = 3000;
+                } # AdGuard
+                {
+                  from = "host";
+                  host.port = 13001;
+                  guest.port = 3001;
+                } # Homepage
+                {
+                  from = "host";
+                  host.port = 13002;
+                  guest.port = 3002;
+                } # Glance
+                {
+                  from = "host";
+                  host.port = 18000;
+                  guest.port = 8000;
+                } # Vaultwarden
               ];
 
               # Use a dummy key for the VM since it cannot decrypt the real secret
@@ -68,11 +105,14 @@
     };
 
     # Package to build a VM for local tests
-    packages = forEachSystem ({ pkgs }: {
+    packages = forEachSystem ({pkgs}: {
       vps-vm = self.nixosConfigurations.vps.config.system.build.vm;
     });
 
-    devShells = forEachSystem ({ pkgs }: {
+    # Formatter for nix fmt
+    formatter = forEachSystem ({pkgs}: pkgs.alejandra);
+
+    devShells = forEachSystem ({pkgs}: {
       default = pkgs.mkShell {
         packages = with pkgs; [
           just

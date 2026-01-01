@@ -28,6 +28,13 @@ install:
     echo "Deploying to ${IP}..."
     nix run github:nix-community/nixos-anywhere -- --copy-host-keys --flake .#vps root@${IP}
 
+# Update NixOS on the running server (faster than install)
+deploy:
+    #!/usr/bin/env sh
+    IP=$(cd terraform && terraform output -raw ipv4_address)
+    echo "Updating server at ${IP}..."
+    nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --target-host root@${IP}
+
 # Regenerate WireGuard client configs with current server public key
 wg-clients:
     #!/usr/bin/env bash

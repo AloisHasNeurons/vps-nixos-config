@@ -3,8 +3,7 @@ let
   # Host key for the Hetzner VPS (retrieved via ssh-keyscan)
   vps = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICDHMwolfYT+Dc/GaPqS99z0gcwan89mYUFIthMOCcT1";
   alois_laptop = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora";
-  users = [ alois alois_laptop vps ];
-in
-{
+  users = [alois alois_laptop vps];
+in {
   "wireguard-private-key.age".publicKeys = users;
 }

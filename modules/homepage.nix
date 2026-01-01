@@ -1,6 +1,9 @@
-{ config, pkgs, lib, ... }:
-
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   services.homepage-dashboard = {
     enable = true;
     listenPort = 3001;

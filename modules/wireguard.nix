@@ -1,14 +1,16 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   # Enable NAT for VPN traffic - using masquerade for automatic interface detection
   networking.nat.enable = true;
-  networking.nat.enableIPv6 = false;  # IPv4 only for now
-  networking.nat.internalInterfaces = [ "wg0" ];
+  networking.nat.enableIPv6 = false; # IPv4 only for now
+  networking.nat.internalInterfaces = ["wg0"];
   # Don't specify externalInterface - let it auto-detect via masquerade
 
   networking.wireguard.interfaces.wg0 = {
-    ips = [ "10.100.0.1/24" ]; # Server's IP in the VPN
+    ips = ["10.100.0.1/24"]; # Server's IP in the VPN
     listenPort = 51820;
     privateKeyFile = config.age.secrets.wireguard-private-key.path;
 
@@ -28,12 +30,12 @@
       # Laptop (Fedora)
       {
         publicKey = "geab3hfyFvpm+rSPAr5W37AGVXkDFRbwufmb+5O1QQ4=";
-        allowedIPs = [ "10.100.0.2/32" ];
+        allowedIPs = ["10.100.0.2/32"];
       }
       # Phone (Pixel 9)
       {
         publicKey = "X8MbaQlE7j5P0H8JM2FvMstK6Z/vOctKYBOb7A66Rjw=";
-        allowedIPs = [ "10.100.0.3/32" ];
+        allowedIPs = ["10.100.0.3/32"];
       }
     ];
   };
