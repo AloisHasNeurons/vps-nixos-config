@@ -10,18 +10,25 @@
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Disko for disk partitioning
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
     self,
     nixpkgs,
     agenix,
+    disko,
     ...
   } @ inputs: let
     inherit (self) outputs;
     systems = ["x86_64-linux"];
     forEachSystem = f: nixpkgs.lib.genAttrs systems (system: f {
-      pkgs = import nixpkgs { inherit system; };
+      pkgs = import nixpkgs { inherit system; config.allowUnfree = true; };
     });
   in {
     nixosConfigurations = {
@@ -31,8 +38,11 @@
         specialArgs = {inherit inputs outputs;};
         modules = [
           ./configuration.nix
+          ./disk-config.nix
           # Agenix for secrets
           inputs.agenix.nixosModules.default
+          # Disko
+          disko.nixosModules.disko
           ({ config, pkgs, ... }: {
             virtualisation.vmVariant = {
               virtualisation.graphics = false;
@@ -68,6 +78,7 @@
           just
           openssh
           agenix.packages.${system}.default
+          terraform # Infrastructure as Code
         ];
       };
     });

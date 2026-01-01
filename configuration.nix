@@ -11,14 +11,12 @@
     ./modules/wireguard.nix
   ];
 
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/vda";
+  # Use systemd-boot for UEFI
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
   
-  fileSystems."/" = {
-    device = "/dev/vda1";
-    fsType = "ext4";
-  };
-
+  # Filesystems are handled by disko (disk-config.nix)
+  
   networking.hostName = "nixOS-25_05-4GB-nbg1-1";
   time.timeZone = "Europe/Paris";
 

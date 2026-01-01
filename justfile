@@ -16,3 +16,14 @@ ssh-vm:
 check:
     nix flake check
     nix build .#nixosConfigurations.vps.config.system.build.toplevel --dry-run
+
+# Provision infrastructure with Terraform
+provision:
+    cd terraform && terraform init && terraform apply
+
+# Install NixOS on the provisioned server
+install:
+    #!/usr/bin/env sh
+    IP=$(cd terraform && terraform output -raw ipv4_address)
+    echo "Deploying to ${IP}..."
+    nix run github:nix-community/nixos-anywhere -- --copy-host-keys --flake .#vps root@${IP}
