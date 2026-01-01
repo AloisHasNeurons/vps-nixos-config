@@ -34,7 +34,7 @@
   # Filesystems are handled by disko (disk-config.nix)
 
   # Filesystems are handled by disko (disk-config.nix)
-  
+
   time.timeZone = "Europe/Paris";
 
   # Secrets
@@ -64,16 +64,16 @@
 
   networking = {
     hostName = "nixOS-25_05-4GB-nbg1-1";
-    
+
     # Firewall
     firewall = {
-      allowedTCPPorts = [ 22 80 443 ];
-      allowedUDPPorts = [ 51820 ];
-      
+      allowedTCPPorts = [22 80 443];
+      allowedUDPPorts = [51820];
+
       # Allow DNS only on the WireGuard interface
       interfaces.wg0 = {
-        allowedTCPPorts = [ 53 ];
-        allowedUDPPorts = [ 53 ];
+        allowedTCPPorts = [53];
+        allowedUDPPorts = [53];
       };
     };
   };
