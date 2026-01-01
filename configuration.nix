@@ -46,6 +46,13 @@
       ExecStart = "${pkgs.python3}/bin/python3 -m http.server ${toString glancePort} --directory /tmp";
       WorkingDirectory = "/tmp";
       Restart = "always";
+      # Security: run as unprivileged user
+      User = "nobody";
+      Group = "nogroup";
+      # Additional hardening
+      NoNewPrivileges = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
     };
   };
 
