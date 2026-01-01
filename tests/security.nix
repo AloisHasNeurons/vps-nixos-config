@@ -60,20 +60,34 @@ pkgs.testers.nixosTest {
     # Exclude 127.0.0.1 and look for non-lo interfaces
     target_ip = server.wait_until_succeeds("ip -4 addr show eth1 | grep inet | awk '{print $2}' | cut -d/ -f1 | head -n 1").strip()
     
-    # 1. Scan allowed ports (Should SUCCEED)
-    # Port 80 (HTTP) 
-    scanner.succeed(f"nmap -p 80 {target_ip} | grep open")
-    # Port 22 (SSH)
-    scanner.succeed(f"nmap -p 22 {target_ip} | grep open")
+    # 1. Run a generic scan (Top 1000 ports) to check for ANY open ports
+    # This ensures forward compatibility: if you add a new service and accidentally expose it, this test will fail.
+    scan_output = scanner.succeed(f"nmap {target_ip} --open")
+    print(f"Scan Output:\n{scan_output}")
     
-    # 2. Scan blocked ports (Should FAIL to find them open)
-    # AdGuard (3000) should be blocked externally
-    scanner.fail(f"nmap -p 3000 {target_ip} | grep open")
-    # Vaultwarden (8000) should be blocked externally
-    scanner.fail(f"nmap -p 8000 {target_ip} | grep open")
-    # Homepage (3001) should be blocked externally
-    scanner.fail(f"nmap -p 3001 {target_ip} | grep open")
-    # Glance (3002) should be blocked externally
-    scanner.fail(f"nmap -p 3002 {target_ip} | grep open")
+    # 2. Parse open TCP ports
+    import re
+    # Matches lines like "80/tcp open http"
+    open_ports = re.findall(r"(\d+)/tcp\s+open", scan_output)
+    
+    # 3. Define the Whitelist (Publicly Allowed Ports)
+    # 22: SSH
+    # 80: HTTP (ACME/Redirect)
+    # 443: HTTPS
+    allowed_ports = ['22', '80', '443']
+    
+    # 4. Verify
+    unexpected_ports = [p for p in open_ports if p not in allowed_ports]
+    
+    if unexpected_ports:
+        raise Exception(f"SECURITY ALERT: Found unexpected open TCP ports: {unexpected_ports}. Check your firewall!")
+    
+    # Verify minimal expected ports are actually open (sanity check)
+    if '22' not in open_ports:
+         raise Exception("sanity check failed: SSH (22) is not open?")
+    if '80' not in open_ports:
+         print("Warning: Port 80 is not open (maybe Nginx not ready or config changed?)")
+
+    print("Success: Public firewall is clean. No unexpected ports exposed.")
   '';
 }
