@@ -33,7 +33,7 @@ deploy:
     #!/usr/bin/env sh
     IP=$(cd terraform && terraform output -raw ipv4_address)
     echo "Updating server at ${IP}..."
-    nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --target-host root@${IP}
+    nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --target-host alois@${IP} --sudo
 
 # Regenerate WireGuard client configs with current server public key
 wg-clients:
@@ -68,8 +68,13 @@ wg-server-key:
     echo "$PUBLIC_KEY" > secrets/wireguard-server.pub
     echo "Saved public key to secrets/wireguard-server.pub"
     
-    # Encrypt private key with age
-    echo "$PRIVATE_KEY" | nix-shell -p age --run 'age -r "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2uzDX8j0gCkpfmB+G9HU3PEEOGp02Nfh4FcIlQ+EWb" -r "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK" -o secrets/wireguard-private-key.age'
+    # Encrypt private key with age (must match secrets.nix recipients!)
+    # Recipients: alois (imt-atlantique), VPS host key, alois_laptop (fedora)
+    echo "$PRIVATE_KEY" | nix-shell -p age --run 'age \
+      -r "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2uzDX8j0gCkpfmB+G9HU3PEEOGp02Nfh4FcIlQ+EWb" \
+      -r "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIPLpXBGNeCvRchBk60pCgdaQQ7OlAJy7KpMlmKlHmTX" \
+      -r "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK" \
+      -o secrets/wireguard-private-key.age'
     echo "Encrypted private key to secrets/wireguard-private-key.age"
     
     echo ""

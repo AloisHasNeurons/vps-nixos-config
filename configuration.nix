@@ -13,6 +13,10 @@
     ./modules/wireguard.nix
   ];
 
+  # Nix Configuration
+  nix.settings.trusted-users = [ "root" "@wheel" ];
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   # Use GRUB for Hybrid Boot (BIOS + UEFI)
   # Use GRUB for Hybrid Boot (BIOS + UEFI)
   boot.loader.grub = {
@@ -38,6 +42,7 @@
   time.timeZone = "Europe/Paris";
 
   # Secrets
+  age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
   age.secrets.wireguard-private-key.file = ./secrets/wireguard-private-key.age;
 
   # Glance placeholder
