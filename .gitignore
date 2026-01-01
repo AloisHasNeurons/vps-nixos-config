@@ -19,6 +19,7 @@ result-*
 
 # Terraform
 .terraform
-.terraform.lock.hcl
+# .terraform.lock.hcl (Should be committed)
 terraform.tfstate
 terraform.tfstate.backup
+secrets/github-actions-deploy
