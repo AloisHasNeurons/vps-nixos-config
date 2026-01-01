@@ -90,7 +90,7 @@
     };
     # Extra hardening
     extraConfig = ''
-      AllowUsers alois
+      AllowUsers alois root
       MaxAuthTries 3
       LoginGraceTime 20
     '';
@@ -114,6 +114,7 @@
     hashedPassword = "!"; # Disabled password
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA/J/t0j3ylcxgXjMOfol8JL0RuuoKAjVvP3X+34o/DF github-actions-deploy"
     ];
   };
 
