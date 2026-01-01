@@ -19,6 +19,10 @@ resource "hcloud_server" "vps" {
   location    = var.location
   ssh_keys    = [hcloud_ssh_key.default.id]
 
+  lifecycle {
+    ignore_changes = [user_data, ssh_keys]
+  }
+
   public_net {
     ipv4_enabled = true
     ipv6_enabled = true
