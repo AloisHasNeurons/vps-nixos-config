@@ -14,10 +14,13 @@
   ];
 
   # Use GRUB for Hybrid Boot (BIOS + UEFI)
-  boot.loader.grub.enable = true;
-  boot.loader.grub.efiSupport = true;
-  boot.loader.grub.efiInstallAsRemovable = true;
-  boot.loader.grub.devices = ["/dev/sda"];
+  # Use GRUB for Hybrid Boot (BIOS + UEFI)
+  boot.loader.grub = {
+    enable = true;
+    efiSupport = true;
+    efiInstallAsRemovable = true;
+    devices = ["/dev/sda"];
+  };
 
   # Kernel modules for Hetzner cloud VMs (virtio drivers)
   boot.initrd.availableKernelModules = [
@@ -30,7 +33,8 @@
 
   # Filesystems are handled by disko (disk-config.nix)
 
-  networking.hostName = "nixOS-25_05-4GB-nbg1-1";
+  # Filesystems are handled by disko (disk-config.nix)
+  
   time.timeZone = "Europe/Paris";
 
   # Secrets
@@ -58,18 +62,20 @@
     };
   };
 
-  # Firewall
-  networking.firewall.allowedTCPPorts = [
-    22
-    80
-    443
-  ];
-  networking.firewall.allowedUDPPorts = [51820];
-
-  # Allow DNS only on the WireGuard interface (not public!)
-  networking.firewall.interfaces.wg0 = {
-    allowedTCPPorts = [53];
-    allowedUDPPorts = [53];
+  networking = {
+    hostName = "nixOS-25_05-4GB-nbg1-1";
+    
+    # Firewall
+    firewall = {
+      allowedTCPPorts = [ 22 80 443 ];
+      allowedUDPPorts = [ 51820 ];
+      
+      # Allow DNS only on the WireGuard interface
+      interfaces.wg0 = {
+        allowedTCPPorts = [ 53 ];
+        allowedUDPPorts = [ 53 ];
+      };
+    };
   };
 
   # SSH - HARDENED

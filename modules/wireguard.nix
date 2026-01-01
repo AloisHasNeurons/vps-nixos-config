@@ -4,9 +4,11 @@
   ...
 }: {
   # Enable NAT for VPN traffic - using masquerade for automatic interface detection
-  networking.nat.enable = true;
-  networking.nat.enableIPv6 = false; # IPv4 only for now
-  networking.nat.internalInterfaces = ["wg0"];
+  networking.nat = {
+    enable = true;
+    enableIPv6 = false; # IPv4 only for now
+    internalInterfaces = ["wg0"];
+  };
   # Don't specify externalInterface - let it auto-detect via masquerade
 
   networking.wireguard.interfaces.wg0 = {
