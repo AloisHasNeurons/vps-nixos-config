@@ -51,9 +51,15 @@
 
   # Firewall
   networking.firewall.allowedTCPPorts = [
-    22 80 443 53
+    22 80 443
   ];
-  networking.firewall.allowedUDPPorts = [ 51820 53 ];
+  networking.firewall.allowedUDPPorts = [ 51820 ];
+  
+  # Allow DNS only on the WireGuard interface (not public!)
+  networking.firewall.interfaces.wg0 = {
+    allowedTCPPorts = [ 53 ];
+    allowedUDPPorts = [ 53 ];
+  };
 
   # SSH
   services.openssh = {
