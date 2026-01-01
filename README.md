@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  This repository represents the culmination of my journey into modern **DevOps, Systems Engineering, and SRE principles**. It is a fully declarative, reproducible, and verifiable server configuration built with NixOS and Terraform.
+  This repository represents the culmination of my journey into modern <b>DevOps, Systems Engineering, and SRE</b> principles. It is a fully declarative, reproducible, and verifiable server configuration built with NixOS and Terraform.
   <br />
   <br />
   <a href="#-the-challenge"><strong>The Challenge</strong></a>
