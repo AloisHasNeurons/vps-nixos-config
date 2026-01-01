@@ -14,17 +14,17 @@
   # Use GRUB for Hybrid Boot (BIOS + UEFI)
   boot.loader.grub.enable = true;
   boot.loader.grub.efiSupport = true;
-  boot.loader.grub.efiInstallAsRemovable = true; # Needed if not using EFI variables
-  # boot.loader.grub.device = "/dev/sda"; # Not needed with disko? Let's check disko docs or try "nodev"
-  # Disko usually handles grub installation if we let it, but often we just point it to the disk.
-  # For safety in hybrid, we often just point to the disk for MBR.
-  # However, with disko, we can often skip the device setting if it installs to the boot partition.
-  # Let's set it to "nodev" first or keep it explicit if we want MBR installation.
-  # Given type EF02 exists, we likely want GRUB to install to MBR of /dev/sda.
-  # Let's use simple GRUB setup compatible with disko.
-  # Actually, disko documentation suggests:
-  # boot.loader.grub.devices = [ "/dev/sda" ];
+  boot.loader.grub.efiInstallAsRemovable = true;
   boot.loader.grub.devices = [ "/dev/sda" ];
+  
+  # Kernel modules for Hetzner cloud VMs (virtio drivers)
+  boot.initrd.availableKernelModules = [ 
+    "virtio_pci" 
+    "virtio_scsi" 
+    "virtio_blk" 
+    "sd_mod" 
+    "ahci" 
+  ];
   
   # Filesystems are handled by disko (disk-config.nix)
   
