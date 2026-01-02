@@ -102,7 +102,7 @@
   users.users.alois = {
     isNormalUser = true;
     extraGroups = ["wheel"];
-    hashedPassword = "$6$CW3p0EcEjTsgwf2P$.4tEOqbsGpmOdoaGw29bLM0N7J4HNdawRaj7eP23yCPXK3JSLkpoWwoFuiXG3NPgfTFvBlP3GP.wO6YAJO0fo.";
+    hashedPassword = "$6$XqSAhd1.NSqQ1ar3$NFolR41M2jbwCKvbXmOsFjNy7/ipbX4L3ZXBnP48rj4o4TylhECGZHbWVsMBrYfMrehjt1M28QbPlcFe28TfM0";
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2uzDX8j0gCkpfmB+G9HU3PEEOGp02Nfh4FcIlQ+EWb alois.vincent@imt-atlantique.net"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
@@ -117,6 +117,8 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA/J/t0j3ylcxgXjMOfol8JL0RuuoKAjVvP3X+34o/DF github-actions-deploy"
     ];
   };
+
+  users.mutableUsers = false;
 
   # Allow deploy user to run sudo without password (for CI/CD)
   security.sudo.extraRules = [
