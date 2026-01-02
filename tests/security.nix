@@ -48,7 +48,7 @@ pkgs.testers.nixosTest {
 
     # The attacker/scanner node
     scanner = {pkgs, ...}: {
-      environment.systemPackages = [pkgs.nmap];
+      environment.systemPackages = [pkgs.nmap pkgs.curl];
     };
   };
 
@@ -96,5 +96,32 @@ pkgs.testers.nixosTest {
          print("Warning: Port 80 is not open (maybe Nginx not ready or config changed?)")
 
     print("Success: Public firewall is clean. No unexpected ports exposed.")
+
+    # 5. Verify Glance is OFF
+    if '3002' in open_ports:
+         raise Exception("FAILURE: Glance (3002) is open! It should have been removed.")
+    print("Success: Glance port 3002 is closed.")
+
+    # 6. Verify Admin Panel Restriction (should return 403 from outside)
+    # We use -k to ignore self-signed certs in test
+    # We check adguard.crapadouille.fr
+    http_code = scanner.succeed(f"curl -k -o /dev/null -s -w '%{{http_code}}' -H 'Host: adguard.crapadouille.fr' https://{target_ip}/").strip()
+
+    if http_code == "403":
+        print("Success: AdGuard admin panel is correctly restricted (403 Forbidden).")
+    else:
+        # It might be 301 if it redirects, but forceSSL does the redirect logic.
+        # If we hit HTTPS directly, we expect 403.
+        print(f"WARNING: AdGuard admin panel returned {http_code} instead of 403. Check nginx config.")
+        # We enforce it
+        if http_code == "200":
+             raise Exception("SECURITY FAILURE: AdGuard admin panel is publicly accessible!")
+
+    # Check Homepage
+    http_code_home = scanner.succeed(f"curl -k -o /dev/null -s -w '%{{http_code}}' -H 'Host: home.crapadouille.fr' https://{target_ip}/").strip()
+    if http_code_home == "403":
+         print("Success: Homepage is correctly restricted (403 Forbidden).")
+    elif http_code_home == "200":
+         raise Exception("SECURITY FAILURE: Homepage is publicly accessible!")
   '';
 }

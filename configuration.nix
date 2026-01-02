@@ -9,6 +9,7 @@
     ./modules/adguard.nix
     ./modules/homepage.nix
     ./modules/nginx.nix
+    ./modules/security-hardening.nix
     ./modules/vaultwarden.nix
     ./modules/wireguard.nix
   ];
@@ -37,35 +38,11 @@
 
   # Filesystems are handled by disko (disk-config.nix)
 
-  # Filesystems are handled by disko (disk-config.nix)
-
   time.timeZone = "Europe/Paris";
 
   # Secrets
   age.identityPaths = ["/etc/ssh/ssh_host_ed25519_key"];
   age.secrets.wireguard-private-key.file = ./secrets/wireguard-private-key.age;
-
-  # Glance placeholder
-  systemd.services.glance = let
-    glancePort = 3002;
-  in {
-    description = "Glance Dashboard";
-    after = ["network.target"];
-    wantedBy = ["multi-user.target"];
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${pkgs.python3}/bin/python3 -m http.server ${toString glancePort} --directory /tmp";
-      WorkingDirectory = "/tmp";
-      Restart = "always";
-      # Security: run as unprivileged user
-      User = "nobody";
-      Group = "nogroup";
-      # Additional hardening
-      NoNewPrivileges = true;
-      ProtectSystem = "strict";
-      ProtectHome = true;
-    };
-  };
 
   networking = {
     hostName = "nixOS-25_05-4GB-nbg1-1";
@@ -115,7 +92,6 @@
 
   # Users - SSH keys only, no password login
   users.users.root = {
-    # No password - root can only login via SSH keys
     hashedPassword = "!"; # Disabled password
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
@@ -126,7 +102,7 @@
   users.users.alois = {
     isNormalUser = true;
     extraGroups = ["wheel"];
-    hashedPassword = "!"; # Disabled password - SSH keys only
+    hashedPassword = "$6$CW3p0EcEjTsgwf2P$.4tEOqbsGpmOdoaGw29bLM0N7J4HNdawRaj7eP23yCPXK3JSLkpoWwoFuiXG3NPgfTFvBlP3GP.wO6YAJO0fo.";
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2uzDX8j0gCkpfmB+G9HU3PEEOGp02Nfh4FcIlQ+EWb alois.vincent@imt-atlantique.net"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
@@ -134,8 +110,8 @@
     ];
   };
 
-  # Allow wheel users to sudo without password (since we can only login via SSH keys anyway)
-  security.sudo.wheelNeedsPassword = false;
+  # Security: Require password for sudo
+  security.sudo.wheelNeedsPassword = true;
 
   # Console keyboard
   console.keyMap = "fr";

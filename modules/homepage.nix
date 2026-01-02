@@ -15,7 +15,8 @@
 
   # Fix for "Host validation failed" when behind a proxy
   systemd.services.homepage-dashboard.environment = {
-    HOSTNAME = "0.0.0.0";
+    HOSTNAME = "127.0.0.1";
+
     HOMEPAGE_ALLOWED_HOSTS = lib.mkForce "home.crapadouille.fr,localhost,127.0.0.1";
   };
 }
