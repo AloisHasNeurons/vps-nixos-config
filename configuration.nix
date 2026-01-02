@@ -65,14 +65,15 @@
     enable = true;
     settings = {
       PasswordAuthentication = false; # Keys only!
-      PermitRootLogin = "prohibit-password"; # Root can only use SSH keys
+      PermitRootLogin = "no"; # Root can only use SSH keys
       KbdInteractiveAuthentication = false;
       X11Forwarding = false;
       PermitEmptyPasswords = false;
     };
     # Extra hardening
     extraConfig = ''
-      AllowUsers alois root
+      AllowUsers alois deploy root
+
       MaxAuthTries 3
       LoginGraceTime 20
     '';
@@ -95,7 +96,6 @@
     hashedPassword = "!"; # Disabled password
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA/J/t0j3ylcxgXjMOfol8JL0RuuoKAjVvP3X+34o/DF github-actions-deploy"
     ];
   };
 
@@ -106,9 +106,30 @@
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2uzDX8j0gCkpfmB+G9HU3PEEOGp02Nfh4FcIlQ+EWb alois.vincent@imt-atlantique.net"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
+    ];
+  };
+
+  users.users.deploy = {
+    isNormalUser = true;
+    extraGroups = ["wheel"];
+    hashedPassword = "!"; # Keys only
+    openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA/J/t0j3ylcxgXjMOfol8JL0RuuoKAjVvP3X+34o/DF github-actions-deploy"
     ];
   };
+
+  # Allow deploy user to run sudo without password (for CI/CD)
+  security.sudo.extraRules = [
+    {
+      users = ["deploy"];
+      commands = [
+        {
+          command = "ALL";
+          options = ["NOPASSWD"];
+        }
+      ];
+    }
+  ];
 
   # Security: Require password for sudo
   security.sudo.wheelNeedsPassword = true;

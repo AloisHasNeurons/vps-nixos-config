@@ -27,7 +27,7 @@ in {
       # Prevent MIME sniffing
       add_header X-Content-Type-Options "nosniff" always;
       # Basic Content Security Policy (adjust as needed for specific apps)
-      # add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
+      add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
     '';
 
     virtualHosts = {

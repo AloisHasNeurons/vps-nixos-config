@@ -73,4 +73,4 @@ jobs:
         ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
 
         # Run rebuild
-        nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --target-host root@$SERVER_IP
+        nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --use-remote-sudo --target-host deploy@$SERVER_IP

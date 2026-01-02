@@ -87,11 +87,6 @@
                   } # Homepage
                   {
                     from = "host";
-                    host.port = 13002;
-                    guest.port = 3002;
-                  } # Glance
-                  {
-                    from = "host";
                     host.port = 18000;
                     guest.port = 8000;
                   } # Vaultwarden
