@@ -16,6 +16,10 @@
       headerStyle = "clean";
 
       layout = {
+        System = {
+          style = "row";
+          columns = 4;
+        };
         Network = {
           style = "row";
           columns = 2;
@@ -26,7 +30,7 @@
         };
         Markets = {
           style = "row";
-          columns = 4; # 4 cards side by side
+          columns = 4;
         };
       };
 
@@ -35,7 +39,7 @@
       };
     };
 
-    # Header: Search only (system stats moved to body as Grafana iframe)
+    # Header: Search only
     widgets = [
       {
         search = {
@@ -47,14 +51,29 @@
           focus = true;
         };
       }
-      # Quick system overview using native widget (Grafana iframe used in body for graphs)
+      # System Grafana panels as iframes
       {
-        resources = {
-          label = "System";
-          cpu = true;
-          memory = true;
-          disk = "/";
-          uptime = true;
+        iframe = {
+          src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-77&var-node=vps&theme=dark";
+          height = 200;
+        };
+      }
+      {
+        iframe = {
+          src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-78&var-node=vps&theme=dark";
+          height = 200;
+        };
+      }
+      {
+        iframe = {
+          src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-74&var-node=vps&theme=dark";
+          height = 200;
+        };
+      }
+      {
+        iframe = {
+          src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-152&var-node=vps&theme=dark";
+          height = 200;
         };
       }
     ];
@@ -107,7 +126,7 @@
           }
         ];
       }
-      # Row 2: Markets (Crypto + Stocks combined)
+      # Row 2: Markets (Crypto + Stocks)
       {
         Markets = [
           {

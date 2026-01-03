@@ -22,12 +22,10 @@ in {
     commonHttpConfig = ''
       # Add HSTS header with preloading to force HTTPS
       add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
-      # Prevent clickjacking
-      add_header X-Frame-Options "SAMEORIGIN" always;
       # Prevent MIME sniffing
       add_header X-Content-Type-Options "nosniff" always;
-      # Basic Content Security Policy (adjust as needed for specific apps)
-      add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
+      # CSP: unsafe-eval needed for Grafana plugins, unsafe-inline for inline scripts
+      add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'" always;
     '';
 
     virtualHosts = {
