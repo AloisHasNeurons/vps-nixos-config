@@ -13,28 +13,33 @@
         session_ttl = "720h";
       };
 
+      users = [
+        {
+          name = "admin";
+          password = "$2a$12$IZz/nGZ3Mp0vsoqOnm2MzuHzeHKRljy4xWp1McpUk.I0wE5x8WvuG";
+        }
+      ];
+
       dns = {
+        upstream_dns = [
+          "https://dns.google/dns-query"
+          "https://dns.cloudflare.com/dns-query"
+          "tls://dns.quad9.net"
+        ];
+
+        bootstrap_dns = ["1.1.1.1" "8.8.8.8" "9.9.9.9"];
         bind_hosts = ["127.0.0.1" "10.100.0.1"];
         port = 53;
 
-        rate_limit = 0;
+        ratelimit = 0;
 
         blocking_mode = "default";
 
-        upstream_dns = [
-          "h3://dns.google/dns-query" # Google (Fast)
-          "h3://dns.cloudflare.com/dns-query" # Cloudflare (Fast)
-          "tls://dns.quad9.net" # Quad9 (Privacy/Security)
-        ];
-
-        all_servers = true; # Query all upstreams in parallel (fastest wins)
+        upstream_mode = "parallel";
         dnssec_enabled = true; # Validate DNSSEC signatures
 
-        # Bootstrap with IPs to resolve the DoH/DoQ domains above
-        bootstrap_dns = ["1.1.1.1" "8.8.8.8" "9.9.9.9"];
-
-        cache_size = 536870912; # 512MB Cache (in bytes)
-        cache_ttl_min = 300; # Enforce at least 5 minute cache
+        cache_size = 536870912;  # 512MB Cache (in bytes)
+        cache_ttl_min = 300;     # Enforce at least 5 minute cache
         cache_optimistic = true; # Serve expired cache immediately, refresh in background
       };
 
@@ -65,7 +70,7 @@
 
       querylog = {
         enabled = true;
-        interval = "168h"; # Reduced to 7 days. 90 days (2160h) is huge for database performance.
+        interval = "168h";
       };
     };
   };
