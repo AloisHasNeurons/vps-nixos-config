@@ -140,6 +140,18 @@
               ping = "http://127.0.0.1:3002";
             };
           }
+          {
+            Immich = {
+              icon = "immich.svg";
+              href = "https://photos.crapadouille.fr";
+              description = "Photo Backup";
+              widget = {
+                type = "immich";
+                url = "http://127.0.0.1:2283";
+                key = "{{HOMEPAGE_VAR_IMMICH_KEY}}"; # API key from Immich admin
+              };
+            };
+          }
         ];
       }
       # Row 3: Markets

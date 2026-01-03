@@ -9,6 +9,7 @@
     ./modules/adguard.nix
     ./modules/grafana.nix
     ./modules/homepage.nix
+    ./modules/immich.nix
     ./modules/nginx.nix
     ./modules/security-hardening.nix
     ./modules/vaultwarden.nix
@@ -45,6 +46,7 @@
   age.identityPaths = ["/etc/ssh/ssh_host_ed25519_key"];
   age.secrets.wireguard-private-key.file = ./secrets/wireguard-private-key.age;
   age.secrets.homepage-env.file = ./secrets/homepage-env.age;
+  age.secrets.immich-env.file = ./secrets/immich-env.age;
 
   networking = {
     hostName = "nixOS-25_05-4GB-nbg1-1";

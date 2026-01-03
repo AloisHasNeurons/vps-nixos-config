@@ -89,6 +89,24 @@ in {
         };
       };
 
+      "photos.${domain}" = {
+        enableACME = true;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:2283";
+          proxyWebsockets = true;
+          # Immich needs larger uploads for photos/videos
+          extraConfig = ''
+            allow 10.100.0.0/24;
+            allow 127.0.0.1;
+            deny all;
+            client_max_body_size 50G;
+            proxy_read_timeout 600s;
+            proxy_send_timeout 600s;
+          '';
+        };
+      };
+
       # Default catch-all
       "localhost" = {
         default = true;
