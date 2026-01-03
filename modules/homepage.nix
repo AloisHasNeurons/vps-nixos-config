@@ -35,7 +35,7 @@
       };
     };
 
-    # Header: Search + System Resources
+    # Header: Search only (system stats moved to body as Grafana iframe)
     widgets = [
       {
         search = {
@@ -47,6 +47,7 @@
           focus = true;
         };
       }
+      # Quick system overview using native widget (Grafana iframe used in body for graphs)
       {
         resources = {
           label = "System";

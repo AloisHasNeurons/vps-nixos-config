@@ -9,7 +9,6 @@
     port = 9090;
     listenAddress = "127.0.0.1";
 
-    # Collect metrics from these exporters
     exporters = {
       node = {
         enable = true;
@@ -31,30 +30,22 @@
       };
     };
 
-    # Scrape configs
     scrapeConfigs = [
       {
         job_name = "node";
         static_configs = [
           {
             targets = ["127.0.0.1:9100"];
-            labels = {
-              instance = "vps";
-            };
+            labels.instance = "vps";
           }
         ];
       }
       {
         job_name = "prometheus";
-        static_configs = [
-          {
-            targets = ["127.0.0.1:9090"];
-          }
-        ];
+        static_configs = [{targets = ["127.0.0.1:9090"];}];
       }
     ];
 
-    # Retention
     retentionTime = "30d";
   };
 
@@ -70,25 +61,23 @@
         root_url = "https://grafana.crapadouille.fr";
       };
 
-      # Anonymous access (read-only, behind VPN)
+      # Enable embedding in iframes (for Homepage)
+      security = {
+        admin_user = "admin";
+        admin_password = "admin"; # Change on first login!
+        allow_embedding = true;
+        cookie_samesite = "disabled";
+      };
+
       "auth.anonymous" = {
         enabled = true;
         org_name = "Main Org.";
         org_role = "Viewer";
       };
 
-      # Disable login form since we use anonymous
-      auth = {
-        disable_login_form = false; # Keep login available for admin
-      };
-
-      security = {
-        admin_user = "admin";
-        admin_password = "admin"; # Change on first login!
-      };
+      auth.disable_login_form = false;
     };
 
-    # Pre-configure Prometheus as data source
     provision = {
       enable = true;
 
@@ -98,11 +87,9 @@
           type = "prometheus";
           url = "http://127.0.0.1:9090";
           isDefault = true;
-          editable = false;
         }
       ];
 
-      # Pre-configured dashboards
       dashboards.settings.providers = [
         {
           name = "default";
@@ -112,7 +99,7 @@
     };
   };
 
-  # Create a basic node exporter dashboard
+  # Create dashboards directory
   systemd.tmpfiles.rules = [
     "d /var/lib/grafana/dashboards 0755 grafana grafana -"
   ];
