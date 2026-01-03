@@ -6,4 +6,5 @@ let
   users = [alois alois_laptop vps];
 in {
   "wireguard-private-key.age".publicKeys = users;
+  "homepage-env.age".publicKeys = users;
 }

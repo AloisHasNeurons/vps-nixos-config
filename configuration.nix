@@ -43,6 +43,7 @@
   # Secrets
   age.identityPaths = ["/etc/ssh/ssh_host_ed25519_key"];
   age.secrets.wireguard-private-key.file = ./secrets/wireguard-private-key.age;
+  age.secrets.homepage-env.file = ./secrets/homepage-env.age;
 
   networking = {
     hostName = "nixOS-25_05-4GB-nbg1-1";

@@ -38,8 +38,8 @@
         upstream_mode = "parallel";
         dnssec_enabled = true; # Validate DNSSEC signatures
 
-        cache_size = 536870912;  # 512MB Cache (in bytes)
-        cache_ttl_min = 300;     # Enforce at least 5 minute cache
+        cache_size = 536870912; # 512MB Cache (in bytes)
+        cache_ttl_min = 300; # Enforce at least 5 minute cache
         cache_optimistic = true; # Serve expired cache immediately, refresh in background
       };
 
