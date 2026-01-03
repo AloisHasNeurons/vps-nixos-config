@@ -8,38 +8,39 @@
     enable = true;
     listenPort = 3001;
 
-    # General settings
-    # General settings
     settings = {
       title = "Crapadouille";
       favicon = "https://cdn-icons-png.flaticon.com/512/2593/2593635.png";
       theme = "dark";
       color = "slate";
       headerStyle = "clean";
+
+      # 2-column layout
       layout = {
         Network = {
           style = "row";
-          columns = 1; # Stacked in first grid cell
+          columns = 2;
         };
         Security = {
           style = "row";
-          columns = 1; # Stacked in second grid cell
+          columns = 2;
         };
         Crypto = {
           style = "row";
-          columns = 1;
+          columns = 2;
         };
         Stocks = {
           style = "row";
-          columns = 1;
+          columns = 2;
         };
       };
+
       providers = {
         finnhub = "{{HOMEPAGE_VAR_FINNHUB_KEY}}";
       };
     };
 
-    # Info widgets (header area)
+    # Header: Search + System Resources
     widgets = [
       {
         search = {
@@ -62,8 +63,9 @@
       }
     ];
 
-    # Services (main content area)
+    # Body: 4 groups in 2 columns
     services = [
+      # Row 1: Network | Security
       {
         Network = [
           {
@@ -102,18 +104,32 @@
           }
         ];
       }
+      # Row 2: Crypto | Stocks
       {
         Crypto = [
           {
-            Bitcoin = {
+            "BTC/USD" = {
               icon = "bitcoin.svg";
               href = "https://coinmarketcap.com/currencies/bitcoin/";
-              description = "BTC/USD";
+              description = "Bitcoin (USD)";
               widget = {
                 type = "coinmarketcap";
                 key = "{{HOMEPAGE_VAR_COINMARKETCAP_KEY}}";
-                slugs = ["bitcoin"]; # Using slug instead of symbol is more robust
-                # Removing currency="EUR" temporarily to fix JS error
+                slugs = ["bitcoin"];
+                defaultinterval = "24h";
+              };
+            };
+          }
+          {
+            "BTC/EUR" = {
+              icon = "bitcoin.svg";
+              href = "https://coinmarketcap.com/currencies/bitcoin/";
+              description = "Bitcoin (EUR)";
+              widget = {
+                type = "coinmarketcap";
+                key = "{{HOMEPAGE_VAR_COINMARKETCAP_KEY}}";
+                slugs = ["bitcoin"];
+                currency = "EUR";
                 defaultinterval = "24h";
               };
             };
@@ -123,15 +139,28 @@
       {
         Stocks = [
           {
-            Market = {
-              icon = "finnhub.svg"; # or generic stock icon
-              href = "https://www.google.com/finance";
-              description = "World & EM";
+            "MSCI World" = {
+              icon = "mdi-chart-line";
+              href = "https://finance.yahoo.com/quote/URTH";
+              description = "iShares MSCI World ETF";
               widget = {
                 type = "stocks";
                 provider = "finnhub";
-                watchlist = ["DCAM.PA" "PAEEM.PA"];
-                cache = 5;
+                watchlist = ["URTH"];
+                showMarketStatus = true;
+              };
+            };
+          }
+          {
+            "Emerging Markets" = {
+              icon = "mdi-chart-areaspline";
+              href = "https://finance.yahoo.com/quote/EEM";
+              description = "iShares MSCI EM ETF";
+              widget = {
+                type = "stocks";
+                provider = "finnhub";
+                watchlist = ["EEM"];
+                showMarketStatus = true;
               };
             };
           }
