@@ -5,50 +5,67 @@
 }: {
   services.adguardhome = {
     enable = true;
-    port = 3000;
+    mutableSettings = false;
+
     settings = {
       http = {
-        address = "127.0.0.1:3000"; # Web UI only on localhost (proxied by nginx)
+        address = "127.0.0.1:3000";
+        session_ttl = "720h";
       };
+
       dns = {
         bind_hosts = ["127.0.0.1" "10.100.0.1"];
         port = 53;
-        # Parallel upstream requests for speed
+
+        rate_limit = 0;
+
+        blocking_mode = "default";
+
         upstream_dns = [
-          "https://dns.cloudflare.com/dns-query"
-          "https://dns.google/dns-query"
-          "https://dns.quad9.net/dns-query"
+          "h3://dns.google/dns-query" # Google (Fast)
+          "h3://dns.cloudflare.com/dns-query" # Cloudflare (Fast)
+          "tls://dns.quad9.net" # Quad9 (Privacy/Security)
         ];
+
+        all_servers = true; # Query all upstreams in parallel (fastest wins)
+        dnssec_enabled = true; # Validate DNSSEC signatures
+
+        # Bootstrap with IPs to resolve the DoH/DoQ domains above
         bootstrap_dns = ["1.1.1.1" "8.8.8.8" "9.9.9.9"];
-        rate_limit = 0; # Unlimited
+
+        cache_size = 536870912; # 512MB Cache (in bytes)
+        cache_ttl_min = 300; # Enforce at least 5 minute cache
+        cache_optimistic = true; # Serve expired cache immediately, refresh in background
       };
+
       filtering = {
-        safe_browsing = true; # Block phishing/malware
+        safe_browsing = true;
         safe_search = {
           enabled = false;
         };
       };
+
       filters = [
         {
           enabled = true;
-          url = "https://big.oisd.nl"; # OISD Big (Comprehensive, low false positives)
+          url = "https://big.oisd.nl";
           name = "OISD Big";
-          id = 1;
         }
         {
           enabled = true;
-          url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt"; # AdGuard DNS filter
-          name = "AdGuard DNS filter";
-          id = 2;
+          url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt";
+          name = "HaGeZi Pro"; # Backup list for redundancy
         }
       ];
+
       statistics = {
         enabled = true;
-        interval = "24h"; # retention
+        interval = "24h";
       };
+
       querylog = {
         enabled = true;
-        interval = "2160h"; # 90 days retention
+        interval = "168h"; # Reduced to 7 days. 90 days (2160h) is huge for database performance.
       };
     };
   };
