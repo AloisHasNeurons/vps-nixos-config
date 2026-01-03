@@ -74,3 +74,15 @@ jobs:
 
         # Run rebuild
         nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --use-remote-sudo --target-host deploy@$SERVER_IP
+
+    - name: Check Reboot Status
+      if: success()
+      run: |
+        cd terraform
+        SERVER_IP=$(terraform output -raw ipv4_address)
+        cd ..
+        
+        echo "Checking if reboot is required..."
+        # This will exit 1 if reboot is needed, causing the job to fail.
+        # GitHub will send a "Workflow Failed" email notification.
+        ssh deploy@$SERVER_IP "check-reboot"

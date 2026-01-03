@@ -20,6 +20,32 @@
   nix.settings.trusted-users = ["root" "@wheel"];
   nix.settings.experimental-features = ["nix-command" "flakes"];
 
+  # Automatic Garbage Collection
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+
+  # Utility to check if reboot is needed
+  environment.systemPackages = [
+    (pkgs.writeScriptBin "check-reboot" ''
+      #!${pkgs.runtimeShell}
+      current_kernel=$(readlink -f /run/current-system/kernel)
+      booted_kernel=$(readlink -f /run/booted-system/kernel)
+
+      if [ "$current_kernel" != "$booted_kernel" ]; then
+        echo "🚨 Reboot required!"
+        echo "Current: $current_kernel"
+        echo "Booted:  $booted_kernel"
+        exit 1
+      else
+        echo "✅ No reboot needed (Kernel is up to date)"
+        exit 0
+      fi
+    '')
+  ];
+
   # Use GRUB for Hybrid Boot (BIOS + UEFI)
   # Use GRUB for Hybrid Boot (BIOS + UEFI)
   boot.loader.grub = {
