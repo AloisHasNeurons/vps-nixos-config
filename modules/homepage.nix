@@ -9,6 +9,7 @@
     listenPort = 3001;
 
     # General settings
+    # General settings
     settings = {
       title = "Crapadouille";
       favicon = "https://cdn-icons-png.flaticon.com/512/2593/2593635.png";
@@ -18,13 +19,17 @@
       layout = {
         Network = {
           style = "row";
-          columns = 2;
+          columns = 1; # Stacked in first grid cell
         };
         Security = {
           style = "row";
-          columns = 1;
+          columns = 1; # Stacked in second grid cell
         };
         Crypto = {
+          style = "row";
+          columns = 1;
+        };
+        Stocks = {
           style = "row";
           columns = 1;
         };
@@ -55,17 +60,6 @@
           uptime = true;
         };
       }
-      {
-        stocks = {
-          provider = "finnhub";
-          watchlist = [
-            "DCAM.PA" # Amundi PEA MSCI World (Euronext Paris)
-            "PAEEM.PA" # Amundi PEA MSCI Emerging Markets (Euronext Paris)
-          ];
-          color = true;
-          cache = 5;
-        };
-      }
     ];
 
     # Services (main content area)
@@ -76,7 +70,7 @@
             AdGuard = {
               icon = "adguard-home.svg";
               href = "https://adguard.crapadouille.fr";
-              description = "DNS Filtering & Ad Blocking";
+              description = "DNS Filtering";
               widget = {
                 type = "adguard";
                 url = "http://127.0.0.1:3000";
@@ -90,7 +84,7 @@
             WireGuard = {
               icon = "wireguard.svg";
               href = "#";
-              description = "VPN Server (10.100.0.1)";
+              description = "VPN Server";
               ping = "10.100.0.1";
             };
           }
@@ -114,13 +108,30 @@
             Bitcoin = {
               icon = "bitcoin.svg";
               href = "https://coinmarketcap.com/currencies/bitcoin/";
-              description = "BTC Price Tracker";
+              description = "BTC/USD";
               widget = {
                 type = "coinmarketcap";
                 key = "{{HOMEPAGE_VAR_COINMARKETCAP_KEY}}";
-                symbols = ["BTC"];
-                currency = "EUR";
-                defaultinterval = "1d";
+                slugs = ["bitcoin"]; # Using slug instead of symbol is more robust
+                # Removing currency="EUR" temporarily to fix JS error
+                defaultinterval = "24h";
+              };
+            };
+          }
+        ];
+      }
+      {
+        Stocks = [
+          {
+            Market = {
+              icon = "finnhub.svg"; # or generic stock icon
+              href = "https://www.google.com/finance";
+              description = "World & EM";
+              widget = {
+                type = "stocks";
+                provider = "finnhub";
+                watchlist = ["DCAM.PA" "PAEEM.PA"];
+                cache = 5;
               };
             };
           }
