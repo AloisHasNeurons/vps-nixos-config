@@ -51,35 +51,51 @@
           focus = true;
         };
       }
-      # System Grafana panels as iframes
-      {
-        iframe = {
-          src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-77&var-node=vps&theme=dark";
-          height = 200;
-        };
-      }
-      {
-        iframe = {
-          src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-78&var-node=vps&theme=dark";
-          height = 200;
-        };
-      }
-      {
-        iframe = {
-          src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-74&var-node=vps&theme=dark";
-          height = 200;
-        };
-      }
-      {
-        iframe = {
-          src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-152&var-node=vps&theme=dark";
-          height = 200;
-        };
-      }
     ];
 
     services = [
-      # Row 1: Network | Security
+      # Row 1: System Monitoring (Grafana iframes)
+      {
+        System = [
+          {
+            "CPU Usage" = {
+              widget = {
+                type = "iframe";
+                src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-77&var-node=vps&theme=dark";
+                height = 200;
+              };
+            };
+          }
+          {
+            "Memory" = {
+              widget = {
+                type = "iframe";
+                src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-78&var-node=vps&theme=dark";
+                height = 200;
+              };
+            };
+          }
+          {
+            "Disk I/O" = {
+              widget = {
+                type = "iframe";
+                src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-74&var-node=vps&theme=dark";
+                height = 200;
+              };
+            };
+          }
+          {
+            "Network" = {
+              widget = {
+                type = "iframe";
+                src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-152&var-node=vps&theme=dark";
+                height = 200;
+              };
+            };
+          }
+        ];
+      }
+      # Row 2: Services
       {
         Network = [
           {
@@ -126,7 +142,7 @@
           }
         ];
       }
-      # Row 2: Markets (Crypto + Stocks)
+      # Row 3: Markets
       {
         Markets = [
           {
