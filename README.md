@@ -27,11 +27,11 @@
   ·
   <a href="#-the-solution-method"><strong>The Solution</strong></a>
   ·
-  <a href="#-tech-stack"><strong>Tech Stack</strong></a>
+  <a href="#-observability--monitoring"><strong>Observability</strong></a>
   ·
-  <a href="#-infrastructure-as-code-terraform"><strong>Terraform</strong></a>
+  <a href="#-gitops--automation"><strong>GitOps</strong></a>
   ·
-  <a href="#-security--ci"><strong>Security & CI</strong></a>
+  <a href="#-security--ci"><strong>Security</strong></a>
 </p>
 
 ---
@@ -43,15 +43,15 @@ Managing servers manually ("ClickOps") or via imperative scripts (Bash/Ansible) 
 I wanted to solve the "Fear of Updates." I wanted a system where:
 1.  **Destruction is trivial**: I can delete the server right now and have it back online, with a different cloud provider, or in my bedroom, in 10 minutes, exactly as it was.
 2.  **Security is proved**: I don't just *hope* I closed the firewall ports; my CI pipeline *proves* it before I deploy.
-3.  **State is explicit**: If it's not in the git repo, it doesn't exist.
+3.  **Maintenance is automated**: Dependency updates should be mundane, not special events.
 
 ## The Solution
 
-To achieve this, I adopted a strict **Infrastructure as Code (IaC)** philosophy, separating the concern into two distinct layers:
+To achieve this, I adopted a strict **Infrastructure as Code (IaC)** philosophy, separating the concern into distinct layers:
 
 ### 1. The Infrastructure Layer (Terraform)
 I treat the server hardware as disposable. Using **Terraform** with the **Hetzner Cloud** provider, I define the physical resources (Servers, SSH Keys, Volumes).
-*   **Why?** Terraform tracks the state of the cloud resources. If I change the server type in `main.tf`, Terraform handles the complex replacement logic automatically. It removes the human element from provisioning.
+*   **Why?** Terraform tracks the state of the cloud resources. If I change the server type in `main.tf`, Terraform handles the complex replacement logic automatically.
 
 ### 2. The Configuration Layer (NixOS)
 Once the hardware exists, **NixOS** takes over. Unlike traditional distros, NixOS is declarative.
@@ -59,29 +59,31 @@ Once the hardware exists, **NixOS** takes over. Unlike traditional distros, NixO
 
 ---
 
-## 🛠️ Infrastructure as Code: Terraform
+## 🔄 GitOps & Automated Maintenance vs Toil
 
-I leveraged **Terraform Cloud** to store the state file remotely, ensuring that the infrastructure can be managed from any machine or CI pipeline without risking state corruption.
+A key SRE principle is eliminating toil. I implemented a **GitOps workflow** to handle system updates automatically using **Renovate Bot**.
 
-**Key Implementation Details:**
-*   **Resource Lifecycle:** The server configuration prevents accidental destruction by ignoring changes to `user_data` after initial provisioning.
-*   **Secret Injection:** SSH keys and API tokens are injected dynamically, never hardcoded.
-*   **Output Piping:** Terraform outputs the server's public IP, which is automatically picked up by the deployment pipeline.
+**The Workflow:**
+1.  **Scan:** Renovate scans my `flake.nix` for outdated inputs (NixOS system updates) or dependencies.
+2.  **PR:** It opens a Pull Request automatically (e.g., *"Update NixOS to 25.05"*).
+3.  **Verify:** GitHub Actions CI runs the full test suite (including the [security scanner](#-security--ci)).
+4.  **Merge & Deploy:** Once merged, the CD pipeline automatically deploys the update.
 
-```hcl
-resource "hcloud_server" "vps" {
-  name        = "nixos-server"
-  image       = "ubuntu-24.04" # Bootstrap image
-  server_type = var.server_type
-  location    = var.location
-  ssh_keys    = [hcloud_ssh_key.default.id]
-  
-  # Prevent accidental recreation of the persistent server
-  lifecycle {
-    ignore_changes = [user_data, ssh_keys]
-  }
-}
-```
+**The Safety Net:**
+*   **Atomic Updates:** If the build fails on the server, the switch is aborted. The system is never left in a broken state.
+*   **Rollbacks:** Every deployment creates a new boot generation. If a service behaves incorrectly, a single command (`nixos-rebuild switch --rollback`) instantaneous reverts the entire system state.
+
+---
+
+## 📊 Observability & Monitoring
+
+You can't manage what you can't measure. I integrated a full monitoring stack to ensure system health and performance visibility.
+
+*   **Prometheus:** Scrapes metrics from system services (`node_exporter`) and applications.
+*   **Grafana:** Visualizes these metrics in a unified dashboard.
+*   **Homepage:** A central entry point aggregating status from all services (Docker APIs, system stats, weather, markets) into a single "Mission Control" UI.
+
+This setup allows me to spot resource bottlenecks (CPU/RAM spikes) or service outages immediately.
 
 ---
 
@@ -97,7 +99,7 @@ Before any code is merged, the CI system:
 2.  **Simulates an Attack**: A secondary attacker machine runs an `nmap` scan against the VM.
 3.  **Audits Ports**: It acts as a whitelist. If *any* port is found open that isn't explicitly allowed (SSH/22, HTTP/80, HTTPS/443), the **pipeline fails**.
 
-> **Result:** It is impossible for me to accidentally expose an internal service (like the `Vaultwarden` admin panel or `Adguard` DNS) to the public internet. The bad deploy is blocked before it ever leaves git.
+> **Result:** It is impossible for me to accidentally expose an internal service (like the `Vaultwarden` admin panel, `Grafana`, or `Adguard`) to the public internet. The bad deploy is blocked before it ever leaves git.
 
 ---
 
@@ -110,13 +112,16 @@ This stack is designed to be a comprehensive, self-hosted ecosystem.
 *   **Provisioning:** `Terraform` + `Terraform Cloud`
 *   **Secret Management:** `Agenix` (Age-encrypted secrets stored in Git)
 *   **CI/CD:** `GitHub Actions`
+*   **Maintenance:** `Renovate Bot`
 
 ### Hosted Services
 *   **Networking:** WireGuard VPN + NFTables (Masquerading)
 *   **Reverse Proxy:** Nginx (ACME/Let's Encrypt)
+*   **Observability:** Grafana + Prometheus
+*   **Media & Storage:** Immich (Self-hosted Photos/Videos)
 *   **DNS Filtering:** AdGuard Home
-*   **Dashboard:** Homepage
-*   **Password Management:** Vaultwarden
+*   **Identity:** Vaultwarden (Bitwarden implementation)
+*   **Dashboard:** Homepage (Unified Service Status)
 
 ---
 
@@ -141,10 +146,7 @@ nix run .#vps-vm
 # 1. Provision infrastructure (Terraform)
 just provision
 
-# 2. Install NixOS on a fresh server (Nix-Anywhere)
-just install
-
-# 3. Deploy updates to existing server
+# 2. Deploy updates (Configures NixOS, runs reboot checks)
 just deploy
 ```
 
