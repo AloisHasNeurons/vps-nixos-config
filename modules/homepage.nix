@@ -15,7 +15,6 @@
       color = "slate";
       headerStyle = "clean";
 
-      # 2-column layout
       layout = {
         Network = {
           style = "row";
@@ -25,13 +24,9 @@
           style = "row";
           columns = 2;
         };
-        Crypto = {
+        Markets = {
           style = "row";
-          columns = 2;
-        };
-        Stocks = {
-          style = "row";
-          columns = 2;
+          columns = 4; # 4 cards side by side
         };
       };
 
@@ -63,7 +58,6 @@
       }
     ];
 
-    # Body: 4 groups in 2 columns
     services = [
       # Row 1: Network | Security
       {
@@ -102,11 +96,19 @@
               ping = "http://127.0.0.1:8000";
             };
           }
+          {
+            Grafana = {
+              icon = "grafana.svg";
+              href = "https://grafana.crapadouille.fr";
+              description = "Monitoring";
+              ping = "http://127.0.0.1:3002";
+            };
+          }
         ];
       }
-      # Row 2: Crypto | Stocks
+      # Row 2: Markets (Crypto + Stocks combined)
       {
-        Crypto = [
+        Markets = [
           {
             "BTC/USD" = {
               icon = "bitcoin.svg";
@@ -134,20 +136,15 @@
               };
             };
           }
-        ];
-      }
-      {
-        Stocks = [
           {
             "MSCI World" = {
               icon = "mdi-chart-line";
               href = "https://finance.yahoo.com/quote/URTH";
-              description = "iShares MSCI World ETF";
+              description = "iShares MSCI World";
               widget = {
                 type = "stocks";
                 provider = "finnhub";
                 watchlist = ["URTH"];
-                showMarketStatus = true;
               };
             };
           }
@@ -155,12 +152,11 @@
             "Emerging Markets" = {
               icon = "mdi-chart-areaspline";
               href = "https://finance.yahoo.com/quote/EEM";
-              description = "iShares MSCI EM ETF";
+              description = "iShares MSCI EM";
               widget = {
                 type = "stocks";
                 provider = "finnhub";
                 watchlist = ["EEM"];
-                showMarketStatus = true;
               };
             };
           }

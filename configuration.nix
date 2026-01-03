@@ -7,6 +7,7 @@
 }: {
   imports = [
     ./modules/adguard.nix
+    ./modules/grafana.nix
     ./modules/homepage.nix
     ./modules/nginx.nix
     ./modules/security-hardening.nix
