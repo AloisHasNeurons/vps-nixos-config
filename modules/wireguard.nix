@@ -16,17 +16,8 @@
     listenPort = 51820;
     privateKeyFile = config.age.secrets.wireguard-private-key.path;
 
-    # Use nftables masquerade instead of hardcoded iptables rules
-    postSetup = ''
-      ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.100.0.0/24 -j MASQUERADE
-      ${pkgs.iptables}/bin/iptables -A FORWARD -i wg0 -j ACCEPT
-      ${pkgs.iptables}/bin/iptables -A FORWARD -o wg0 -j ACCEPT
-    '';
-    postShutdown = ''
-      ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.100.0.0/24 -j MASQUERADE
-      ${pkgs.iptables}/bin/iptables -D FORWARD -i wg0 -j ACCEPT
-      ${pkgs.iptables}/bin/iptables -D FORWARD -o wg0 -j ACCEPT
-    '';
+    # Use generic masquerade (handled by networking.nat)
+    # networking.nat.internalInterfaces = ["wg0"] takes care of forwarding and NAT
 
     peers = [
       # Laptop (Fedora)

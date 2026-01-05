@@ -76,7 +76,7 @@
             };
           }
           {
-            "Disk I/O" = {
+            "Network" = {
               widget = {
                 type = "iframe";
                 src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-74&var-node=vps&theme=dark";
@@ -85,7 +85,7 @@
             };
           }
           {
-            "Network" = {
+            "Disk I/O" = {
               widget = {
                 type = "iframe";
                 src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-152&var-node=vps&theme=dark";

@@ -24,7 +24,7 @@
   nix.gc = {
     automatic = true;
     dates = "weekly";
-    options = "--delete-older-than 30d";
+    options = "--delete-older-than 15d";
   };
 
   # Utility to check if reboot is needed
@@ -46,7 +46,6 @@
     '')
   ];
 
-  # Use GRUB for Hybrid Boot (BIOS + UEFI)
   # Use GRUB for Hybrid Boot (BIOS + UEFI)
   boot.loader.grub = {
     enable = true;
