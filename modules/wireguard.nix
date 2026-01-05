@@ -14,6 +14,7 @@
   networking.wireguard.interfaces.wg0 = {
     ips = ["10.100.0.1/24"]; # Server's IP in the VPN
     listenPort = 51820;
+    mtu = 1360; # Avoid fragmentation on mobile networks (LTE/5G)
     privateKeyFile = config.age.secrets.wireguard-private-key.path;
 
     # Use generic masquerade (handled by networking.nat)

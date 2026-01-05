@@ -38,5 +38,9 @@
     # TCP hardening
     "net.ipv4.tcp_syncookies" = 1;
     "net.ipv4.tcp_rfc1337" = 1; # Protect against time-wait assassination
+
+    # TCP Optimization
+    "net.core.default_qdisc" = "fq";
+    "net.ipv4.tcp_congestion_control" = "bbr";
   };
 }
