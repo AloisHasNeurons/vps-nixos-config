@@ -41,6 +41,14 @@
         cache_size = 536870912; # 512MB Cache (in bytes)
         cache_ttl_min = 300; # Enforce at least 5 minute cache
         cache_optimistic = true; # Serve expired cache immediately, refresh in background
+
+        # Split DNS: Resolve photos locally when on VPN so Nginx sees VPN IP
+        rewrites = [
+          {
+            domain = "photos.crapadouille.fr";
+            answer = "10.100.0.1";
+          }
+        ];
       };
 
       filtering = {
