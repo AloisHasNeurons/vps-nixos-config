@@ -27,7 +27,7 @@
       PUBLIC_URL = "https://photos.crapadouille.fr";
 
       # The Internal Port the proxy listens on
-      PORT = "3003";
+      PORT = "3004";
 
       # Optional: Cache control
       # 1440 mins = 24 hours

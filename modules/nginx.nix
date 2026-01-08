@@ -33,7 +33,7 @@ in {
     # Public -> Immich Proxy (3003)
     appendHttpConfig = ''
       map $remote_addr $immich_backend {
-        default       http://127.0.0.1:3003;
+        default       http://127.0.0.1:3004;
         10.100.0.0/24 http://127.0.0.1:2283;
         127.0.0.1     http://127.0.0.1:2283;
       }
