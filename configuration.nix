@@ -10,6 +10,7 @@
     ./modules/grafana.nix
     ./modules/homepage.nix
     ./modules/immich.nix
+    ./modules/immich-public-proxy.nix
     ./modules/nginx.nix
     ./modules/security-hardening.nix
     ./modules/vaultwarden.nix

@@ -28,6 +28,17 @@ in {
       add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'" always;
     '';
 
+    # Map source IP to backend port
+    # VPN/Local -> Immich Direct (2283)
+    # Public -> Immich Proxy (3003)
+    appendHttpConfig = ''
+      map $remote_addr $immich_backend {
+        default       http://127.0.0.1:3003;
+        10.100.0.0/24 http://127.0.0.1:2283;
+        127.0.0.1     http://127.0.0.1:2283;
+      }
+    '';
+
     virtualHosts = {
       "adguard.${domain}" = {
         enableACME = true;
@@ -93,16 +104,18 @@ in {
         enableACME = true;
         forceSSL = true;
         locations."/" = {
-          proxyPass = "http://127.0.0.1:2283";
+          proxyPass = "$immich_backend";
           proxyWebsockets = true;
           # Immich needs larger uploads for photos/videos
           extraConfig = ''
-            allow 10.100.0.0/24;
-            allow 127.0.0.1;
-            deny all;
             client_max_body_size 50G;
             proxy_read_timeout 600s;
             proxy_send_timeout 600s;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
           '';
         };
       };
