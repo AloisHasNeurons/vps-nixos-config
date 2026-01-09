@@ -26,16 +26,22 @@ in {
       add_header X-Content-Type-Options "nosniff" always;
       # CSP: unsafe-eval needed for Grafana plugins, unsafe-inline for inline scripts
       add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'" always;
-    '';
 
-    # Map source IP to backend port
-    # VPN/Local -> Immich Direct (2283)
-    # Public -> Immich Proxy (3003)
-    appendHttpConfig = ''
+      # Upstreams for Immich Traffic Splitting
+      upstream immich_public_proxy {
+        server 127.0.0.1:3004;
+      }
+      upstream immich_vpn_direct {
+        server 127.0.0.1:2283;
+      }
+
+      # Map source IP to upstream name
+      # VPN/Local -> Immich Direct
+      # Public -> Immich Proxy
       map $remote_addr $immich_backend {
-        default       http://127.0.0.1:3004;
-        10.100.0.0/24 http://127.0.0.1:2283;
-        127.0.0.1     http://127.0.0.1:2283;
+        default       immich_public_proxy;
+        10.100.0.0/24 immich_vpn_direct;
+        127.0.0.1     immich_vpn_direct;
       }
     '';
 
@@ -104,10 +110,14 @@ in {
         enableACME = true;
         forceSSL = true;
         locations."/" = {
-          proxyPass = "$immich_backend";
+          proxyPass = "http://$immich_backend";
           proxyWebsockets = true;
           # Immich needs larger uploads for photos/videos
           extraConfig = ''
+            add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'" always;
+
             add_header X-Debug-Source-IP $remote_addr always;
             add_header X-Debug-Backend $immich_backend always;
 
