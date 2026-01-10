@@ -35,10 +35,10 @@ in {
         server 127.0.0.1:2283;
       }
 
-      # Map source IP to upstream name
+      # Geo-Map source IP to upstream name (Supports CIDR)
       # VPN/Local -> Immich Direct
       # Public -> Immich Proxy
-      map $remote_addr $immich_backend {
+      geo $remote_addr $immich_backend {
         default       immich_public_proxy;
         10.100.0.0/24 immich_vpn_direct;
         127.0.0.1     immich_vpn_direct;
