@@ -31,6 +31,11 @@
         publicKey = "X8MbaQlE7j5P0H8JM2FvMstK6Z/vOctKYBOb7A66Rjw=";
         allowedIPs = ["10.100.0.3/32"];
       }
+      # Desktop (Windows 11)
+      {
+        publicKey = "JfYoIMlEdPnyB9SpKEmkgo978F4xEkGBhLv00NHYCTI=";
+        allowedIPs = ["10.100.0.4/32"];
+      }
     ];
   };
 }
