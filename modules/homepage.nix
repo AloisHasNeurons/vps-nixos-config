@@ -28,12 +28,12 @@
             columns = 2;
           };
         }
-        {
-          Security = {
-            style = "row";
-            columns = 1;
-          };
-        }
+        # {
+        #   Security = {
+        #     style = "row";
+        #     columns = 1;
+        #   };
+        # }
         {
           Media = {
             style = "row";
