@@ -212,16 +212,11 @@
         ];
       }
     ];
-  };
 
-  # Load environment secrets from agenix
-  systemd.services.homepage-dashboard.serviceConfig = {
-    EnvironmentFile = lib.mkForce config.age.secrets.homepage-env.path;
-  };
+    # Load environment secrets from agenix (for HOMEPAGE_VAR_* templating)
+    environmentFile = config.age.secrets.homepage-env.path;
 
-  # Fix for "Host validation failed" when behind a proxy
-  systemd.services.homepage-dashboard.environment = {
-    HOSTNAME = "127.0.0.1";
-    HOMEPAGE_ALLOWED_HOSTS = lib.mkForce "home.crapadouille.fr,localhost,127.0.0.1";
+    # Fix for "Host validation failed" when behind a proxy
+    allowedHosts = "home.crapadouille.fr,localhost,127.0.0.1";
   };
 }
