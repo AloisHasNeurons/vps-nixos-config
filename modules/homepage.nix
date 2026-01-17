@@ -26,7 +26,11 @@
         };
         Security = {
           style = "row";
-          columns = 2;
+          columns = 1;
+        };
+        Media = {
+          style = "row";
+          columns = 1;
         };
         Markets = {
           style = "row";
@@ -54,7 +58,7 @@
     ];
 
     services = [
-      # Row 1: System Monitoring (Grafana iframes)
+      # Row 1: System Monitoring (Grafana iframes + link)
       {
         System = [
           {
@@ -93,9 +97,17 @@
               };
             };
           }
+          {
+            Grafana = {
+              icon = "grafana.svg";
+              href = "https://grafana.crapadouille.fr";
+              description = "Monitoring";
+              ping = "http://127.0.0.1:3002";
+            };
+          }
         ];
       }
-      # Row 2: Services
+      # Row 2: Network
       {
         Network = [
           {
@@ -122,6 +134,7 @@
           }
         ];
       }
+      # Row 3: Security
       {
         Security = [
           {
@@ -132,14 +145,11 @@
               ping = "http://127.0.0.1:8000";
             };
           }
-          {
-            Grafana = {
-              icon = "grafana.svg";
-              href = "https://grafana.crapadouille.fr";
-              description = "Monitoring";
-              ping = "http://127.0.0.1:3002";
-            };
-          }
+        ];
+      }
+      # Row 4: Media
+      {
+        Media = [
           {
             Immich = {
               icon = "immich.svg";
@@ -155,7 +165,7 @@
           }
         ];
       }
-      # Row 3: Markets
+      # Row 5: Markets
       {
         Markets = [
           {
