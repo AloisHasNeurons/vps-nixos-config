@@ -15,28 +15,38 @@
       color = "slate";
       headerStyle = "clean";
 
-      layout = {
-        System = {
-          style = "row";
-          columns = 4;
-        };
-        Network = {
-          style = "row";
-          columns = 2;
-        };
-        Security = {
-          style = "row";
-          columns = 1;
-        };
-        Media = {
-          style = "row";
-          columns = 1;
-        };
-        Markets = {
-          style = "row";
-          columns = 4;
-        };
-      };
+      layout = [
+        {
+          System = {
+            style = "row";
+            columns = 4;
+          };
+        }
+        {
+          Network = {
+            style = "row";
+            columns = 2;
+          };
+        }
+        {
+          Security = {
+            style = "row";
+            columns = 1;
+          };
+        }
+        {
+          Media = {
+            style = "row";
+            columns = 1;
+          };
+        }
+        {
+          Markets = {
+            style = "row";
+            columns = 4;
+          };
+        }
+      ];
 
       providers = {
         finnhub = "{{HOMEPAGE_VAR_FINNHUB_KEY}}";
