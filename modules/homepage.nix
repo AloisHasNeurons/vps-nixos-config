@@ -145,18 +145,18 @@
         ];
       }
       # Row 3: Security
-      {
-        Security = [
-          {
-            Vaultwarden = {
-              icon = "vaultwarden.svg";
-              href = "https://vault.crapadouille.fr";
-              description = "Password Manager";
-              ping = "http://127.0.0.1:8000";
-            };
-          }
-        ];
-      }
+      # {
+      #   Security = [
+      #     {
+      #       Vaultwarden = {
+      #         icon = "vaultwarden.svg";
+      #         href = "https://vault.crapadouille.fr";
+      #         description = "Password Manager";
+      #         ping = "http://127.0.0.1:8000";
+      #       };
+      #     }
+      #   ];
+      # }
       # Row 4: Media
       {
         Media = [
