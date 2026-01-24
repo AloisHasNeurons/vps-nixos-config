@@ -41,6 +41,12 @@
           };
         }
         {
+          Food = {
+            style = "row";
+            columns = 1;
+          };
+        }
+        {
           Markets = {
             style = "row";
             columns = 4;
@@ -175,7 +181,20 @@
           }
         ];
       }
-      # Row 5: Markets
+      # Row 5: Food
+      {
+        Food = [
+          {
+            Mealie = {
+              icon = "mealie";
+              href = "https://mealie.crapadouille.fr";
+              description = "Recipe Manager";
+              ping = "http://127.0.0.1:9000";
+            };
+          }
+        ];
+      }
+      # Row 6: Markets
       {
         Markets = [
           {
