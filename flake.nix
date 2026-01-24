@@ -16,6 +16,11 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Minecraft
+    nix-minecraft = {
+      url = "github:Infinidoge/nix-minecraft";
+    };
   };
 
   outputs = {
@@ -48,6 +53,14 @@
           inputs.agenix.nixosModules.default
           # Disko
           disko.nixosModules.disko
+
+          # Minecraft
+          ./modules/minecraft.nix
+          inputs.nix-minecraft.nixosModules.minecraft-servers
+          {
+            nixpkgs.overlays = [inputs.nix-minecraft.overlay];
+            nixpkgs.config.allowUnfree = true;
+          }
           ({
             config,
             pkgs,
