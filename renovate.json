@@ -9,17 +9,20 @@
   },
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": ["before 4am on monday"]
+    "schedule": ["before 4am"],
+    "automerge": true
   },
   "vulnerabilityAlerts": {
     "enabled": true,
-    "schedule": []
+    "schedule": [],
+    "automerge": true
   },
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "all non-major dependencies",
-      "groupSlug": "all-minor-patch"
+      "groupSlug": "all-minor-patch",
+      "automerge": true
     }
   ],
   "labels": ["renovate"]
