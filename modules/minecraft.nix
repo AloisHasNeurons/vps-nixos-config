@@ -22,6 +22,7 @@
     servers = {
       fabric-server = {
         enable = true;
+        autoStart = false;
         package = pkgs.fabricServers.fabric-1_21_11;
 
         # RAM TUNING:
