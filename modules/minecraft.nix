@@ -51,10 +51,10 @@
     };
   };
 
-  # 4. Aliases for easy management
-  environment.shellAliases = {
-    mc-start = "systemctl start minecraft-server-fabric-server";
-    mc-stop = "systemctl stop minecraft-server-fabric-server";
-    mc-console = "nix-minecraft-console fabric-server";
-  };
+  # 4. Scripts for easy management (sudo-compatible)
+  environment.systemPackages = [
+    (pkgs.writeShellScriptBin "mc-start" "exec systemctl start minecraft-server-fabric-server")
+    (pkgs.writeShellScriptBin "mc-stop" "exec systemctl stop minecraft-server-fabric-server")
+    (pkgs.writeShellScriptBin "mc-console" "exec nix-minecraft-console fabric-server")
+  ];
 }
