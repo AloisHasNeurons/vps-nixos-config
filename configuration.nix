@@ -26,7 +26,7 @@
   nix.gc = {
     automatic = true;
     dates = "weekly";
-    options = "--delete-older-than 15d";
+    options = "--delete-older-than 7d";
   };
 
   # Utility to check if reboot is needed
