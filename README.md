@@ -59,7 +59,7 @@ Once the hardware exists, **NixOS** takes over. Unlike traditional distros, NixO
 
 ---
 
-## 🔄 GitOps & Automated Maintenance vs Toil
+## GitOps & Automated Maintenance vs Toil
 
 A key SRE principle is eliminating toil. I implemented a **GitOps workflow** to handle system updates automatically using **Renovate Bot**.
 
@@ -75,7 +75,7 @@ A key SRE principle is eliminating toil. I implemented a **GitOps workflow** to 
 
 ---
 
-## 📊 Observability & Monitoring
+## Observability & Monitoring
 
 You can't manage what you can't measure. I integrated a full monitoring stack to ensure system health and performance visibility.
 
@@ -87,7 +87,7 @@ This setup allows me to spot resource bottlenecks (CPU/RAM spikes) or service ou
 
 ---
 
-## 🛡️ Security & Continuous Verification
+## Security & Continuous Verification
 
 Trust, but verify. A unique feature of this project is the **Forward-Compatible Security Scanner**.
 
@@ -120,7 +120,6 @@ This stack is designed to be a comprehensive, self-hosted ecosystem.
 *   **Observability:** Grafana + Prometheus
 *   **Media & Storage:** Immich (Self-hosted Photos/Videos)
 *   **DNS Filtering:** AdGuard Home
-*   **Identity:** Vaultwarden (Bitwarden implementation)
 *   **Dashboard:** Homepage (Unified Service Status)
 
 ---
