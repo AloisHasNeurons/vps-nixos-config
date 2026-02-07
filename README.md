@@ -99,7 +99,7 @@ Before any code is merged, the CI system:
 2.  **Simulates an Attack**: A secondary attacker machine runs an `nmap` scan against the VM.
 3.  **Audits Ports**: It acts as a whitelist. If *any* port is found open that isn't explicitly allowed (SSH/22, HTTP/80, HTTPS/443), the **pipeline fails**.
 
-> **Result:** It is impossible for me to accidentally expose an internal service (like the `Vaultwarden` admin panel, `Grafana`, or `Adguard`) to the public internet. The bad deploy is blocked before it ever leaves git.
+> **Result:** It is impossible for me to accidentally expose an internal service (like the `Grafana`, or `Adguard` admin panel) to the public internet. The bad deploy is blocked before it ever leaves git.
 
 ---
 
@@ -121,12 +121,12 @@ This stack is designed to be a comprehensive, self-hosted ecosystem.
 *   **Media & Storage:** Immich (Self-hosted Photos/Videos)
 *   **DNS Filtering:** AdGuard Home
 *   **Dashboard:** Homepage (Unified Service Status)
-
+*   **Recipe manager:** Mealie
 ---
 
 ## Usage & Deployment
 
-The entire lifecycle is managed via `just` recipes, simplifying complex commands into standard verbs.
+The entire lifecycle is managed via `just` recipes, simplifying complex commands into standard verbs. And the deployment to the server is automatic when pushed to GitHub.
 
 ### Local Testing
 You can run the full test suite locally without touching the real server:
