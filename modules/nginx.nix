@@ -91,21 +91,6 @@ in {
         };
       };
 
-      "vault.${domain}" = {
-        enableACME = true;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:8000";
-          proxyWebsockets = true;
-          # Restrict to VPN
-          extraConfig = ''
-            allow 10.100.0.0/24;
-            allow 127.0.0.1;
-            deny all;
-          '';
-        };
-      };
-
       "grafana.${domain}" = {
         enableACME = true;
         forceSSL = true;

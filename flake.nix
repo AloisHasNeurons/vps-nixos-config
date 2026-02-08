@@ -98,11 +98,6 @@
                     host.port = 13001;
                     guest.port = 3001;
                   } # Homepage
-                  {
-                    from = "host";
-                    host.port = 18000;
-                    guest.port = 8000;
-                  } # Vaultwarden
                 ];
               };
 

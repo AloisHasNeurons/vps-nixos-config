@@ -14,7 +14,7 @@
     ./modules/mealie.nix
     ./modules/nginx.nix
     ./modules/security-hardening.nix
-    ./modules/vaultwarden.nix
+
     ./modules/wireguard.nix
   ];
 
