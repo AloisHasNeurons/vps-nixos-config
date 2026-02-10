@@ -9,6 +9,10 @@
     enableIPv6 = false; # IPv4 only for now
     internalInterfaces = ["wg0"];
   };
+  
+  # Fix for WireGuard: Allow asymmetric routing
+  networking.firewall.checkReversePath = "loose";
+  
   # Don't specify externalInterface - let it auto-detect via masquerade
 
   networking.wireguard.interfaces.wg0 = {
