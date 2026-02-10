@@ -15,10 +15,13 @@
 
   # Don't specify externalInterface - let it auto-detect via masquerade
 
+  # Force enable IP forwarding
+  boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+
   networking.wireguard.interfaces.wg0 = {
     ips = ["10.100.0.1/24"]; # Server's IP in the VPN
     listenPort = 51820;
-    mtu = 1360; # Avoid fragmentation on mobile networks (LTE/5G)
+    mtu = 1280; # Lower MTU to generic failsafe value
     privateKeyFile = config.age.secrets.wireguard-private-key.path;
 
     # Use generic masquerade (handled by networking.nat)
