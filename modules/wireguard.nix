@@ -21,7 +21,7 @@
   networking.wireguard.interfaces.wg0 = {
     ips = ["10.100.0.1/24"]; # Server's IP in the VPN
     listenPort = 51820;
-    mtu = 1280; # Lower MTU to generic failsafe value
+    mtu = 1320; # Optimized MTU (Safe for 99% of networks, better performance)
     privateKeyFile = config.age.secrets.wireguard-private-key.path;
 
     # Use generic masquerade (handled by networking.nat)
@@ -32,16 +32,19 @@
       {
         publicKey = "geab3hfyFvpm+rSPAr5W37AGVXkDFRbwufmb+5O1QQ4=";
         allowedIPs = ["10.100.0.2/32"];
+        persistentKeepalive = 25; # Keep NAT mappings open
       }
       # Phone (Pixel 9)
       {
         publicKey = "X8MbaQlE7j5P0H8JM2FvMstK6Z/vOctKYBOb7A66Rjw=";
         allowedIPs = ["10.100.0.3/32"];
+        persistentKeepalive = 25;
       }
       # Desktop (Windows 11)
       {
         publicKey = "JfYoIMlEdPnyB9SpKEmkgo978F4xEkGBhLv00NHYCTI=";
         allowedIPs = ["10.100.0.4/32"];
+        persistentKeepalive = 25;
       }
     ];
   };
