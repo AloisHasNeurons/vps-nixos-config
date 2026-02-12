@@ -14,8 +14,13 @@
   networking.firewall.checkReversePath = "loose";
 
   # TCP MSS Clamping - crucial for WireGuard performance
+  # Uses check-then-add (-C || -A) to avoid duplicate rules on firewall reload
   networking.firewall.extraCommands = ''
+    ${pkgs.iptables}/bin/iptables -t mangle -C FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null || \
     ${pkgs.iptables}/bin/iptables -t mangle -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+  '';
+  networking.firewall.extraStopCommands = ''
+    ${pkgs.iptables}/bin/iptables -t mangle -D FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null || true
   '';
 
   # Don't specify externalInterface - let it auto-detect via masquerade
@@ -37,19 +42,16 @@
       {
         publicKey = "geab3hfyFvpm+rSPAr5W37AGVXkDFRbwufmb+5O1QQ4=";
         allowedIPs = ["10.100.0.2/32"];
-        persistentKeepalive = 25; # Keep NAT mappings open
       }
       # Phone (Pixel 9)
       {
         publicKey = "X8MbaQlE7j5P0H8JM2FvMstK6Z/vOctKYBOb7A66Rjw=";
         allowedIPs = ["10.100.0.3/32"];
-        persistentKeepalive = 25;
       }
       # Desktop (Windows 11)
       {
         publicKey = "JfYoIMlEdPnyB9SpKEmkgo978F4xEkGBhLv00NHYCTI=";
         allowedIPs = ["10.100.0.4/32"];
-        persistentKeepalive = 25;
       }
     ];
   };

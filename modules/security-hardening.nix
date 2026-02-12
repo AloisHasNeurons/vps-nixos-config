@@ -45,5 +45,9 @@
 
     # TCP MTU Probing - checking for black holes
     "net.ipv4.tcp_mtu_probing" = 1;
+
+    # Socket buffer tuning for WireGuard throughput
+    "net.core.rmem_max" = 2500000;
+    "net.core.wmem_max" = 2500000;
   };
 }
