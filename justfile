@@ -40,16 +40,16 @@ wg-clients:
     #!/usr/bin/env bash
     set -e
     SERVER_PUBKEY=$(cat secrets/wireguard-server.pub)
-    ENDPOINT="crapadouille.fr:51820"
+    ENDPOINT="crapadouille.fr:41820"
     
-    # Laptop config
+    # Laptop config (dual-stack)
     LAPTOP_KEY=$(cat clients/laptop.key)
-    printf '[Interface]\nPrivateKey = %s\nAddress = 10.100.0.2/24\nDNS = 10.100.0.1\n\n[Peer]\nPublicKey = %s\nEndpoint = %s\nAllowedIPs = 0.0.0.0/0\nPersistentKeepalive = 25\n' "$LAPTOP_KEY" "$SERVER_PUBKEY" "$ENDPOINT" > clients/laptop.conf
+    printf '[Interface]\nPrivateKey = %s\nAddress = 10.100.0.2/24, fd10:100::2/64\nDNS = 10.100.0.1, fd10:100::1\n\n[Peer]\nPublicKey = %s\nEndpoint = %s\nAllowedIPs = 0.0.0.0/0, ::/0\nPersistentKeepalive = 25\n' "$LAPTOP_KEY" "$SERVER_PUBKEY" "$ENDPOINT" > clients/laptop.conf
     echo "Generated clients/laptop.conf"
     
-    # Phone config
+    # Phone config (dual-stack)
     PHONE_KEY=$(cat clients/phone.key)
-    printf '[Interface]\nPrivateKey = %s\nAddress = 10.100.0.3/24\nDNS = 10.100.0.1\n\n[Peer]\nPublicKey = %s\nEndpoint = %s\nAllowedIPs = 0.0.0.0/0\nPersistentKeepalive = 25\n' "$PHONE_KEY" "$SERVER_PUBKEY" "$ENDPOINT" > clients/phone.conf
+    printf '[Interface]\nPrivateKey = %s\nAddress = 10.100.0.3/24, fd10:100::3/64\nDNS = 10.100.0.1, fd10:100::1\n\n[Peer]\nPublicKey = %s\nEndpoint = %s\nAllowedIPs = 0.0.0.0/0, ::/0\nPersistentKeepalive = 25\n' "$PHONE_KEY" "$SERVER_PUBKEY" "$ENDPOINT" > clients/phone.conf
     echo "Generated clients/phone.conf"
     echo ""
     echo "Don't forget to update your devices with the new configs!"
