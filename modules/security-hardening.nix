@@ -42,5 +42,8 @@
     # TCP Optimization
     "net.core.default_qdisc" = "fq";
     "net.ipv4.tcp_congestion_control" = "bbr";
+
+    # TCP MTU Probing - checking for black holes
+    "net.ipv4.tcp_mtu_probing" = 1;
   };
 }

@@ -13,6 +13,11 @@
   # Fix for WireGuard: Allow asymmetric routing
   networking.firewall.checkReversePath = "loose";
 
+  # TCP MSS Clamping - crucial for WireGuard performance
+  networking.firewall.extraCommands = ''
+    ${pkgs.iptables}/bin/iptables -t mangle -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+  '';
+
   # Don't specify externalInterface - let it auto-detect via masquerade
 
   # Force enable IP forwarding
@@ -21,7 +26,7 @@
   networking.wireguard.interfaces.wg0 = {
     ips = ["10.100.0.1/24"]; # Server's IP in the VPN
     listenPort = 51820;
-    mtu = 1320; # Optimized MTU (Safe for 99% of networks, better performance)
+    mtu = 1420; # Restored to standard 1420, relying on MSS clamping for fits
     privateKeyFile = config.age.secrets.wireguard-private-key.path;
 
     # Use generic masquerade (handled by networking.nat)
