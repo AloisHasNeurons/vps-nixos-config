@@ -96,17 +96,22 @@
     enable = true;
     settings = {
       PasswordAuthentication = false; # Keys only!
-      PermitRootLogin = "no"; # Root can only use SSH keys
+      PermitRootLogin = "no"; # All root SSH access blocked
       KbdInteractiveAuthentication = false;
       X11Forwarding = false;
       PermitEmptyPasswords = false;
     };
     # Extra hardening
     extraConfig = ''
-      AllowUsers alois deploy root
+      AllowUsers alois deploy
 
       MaxAuthTries 3
       LoginGraceTime 20
+      MaxSessions 3
+      ClientAliveInterval 300
+      ClientAliveCountMax 2
+      AllowAgentForwarding no
+      AllowTcpForwarding no
     '';
   };
 
@@ -125,9 +130,6 @@
   # Users - SSH keys only, no password login
   users.users.root = {
     hashedPassword = "!"; # Disabled password
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
-    ];
   };
 
   users.users.alois = {
