@@ -44,7 +44,6 @@
     nixosConfigurations = {
       # --- VPS ---
       vps = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [
           ./configuration.nix
@@ -54,6 +53,8 @@
           inputs.agenix.nixosModules.default
           # Disko
           disko.nixosModules.disko
+          # Platform
+          {nixpkgs.hostPlatform = "x86_64-linux";}
 
           # Minecraft
           ./modules/minecraft.nix

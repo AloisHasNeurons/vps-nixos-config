@@ -8,7 +8,6 @@ pkgs.testers.nixosTest {
 
   # Python type checking doesn't know about dynamic machine names
   skipTypeCheck = true;
-  skipLint = true;
 
   nodes = {
     # The server node running our configuration
@@ -53,6 +52,8 @@ pkgs.testers.nixosTest {
   };
 
   testScript = {nodes, ...}: ''
+    import re
+
     start_all()
 
     # Wait for server to be ready
@@ -62,66 +63,61 @@ pkgs.testers.nixosTest {
     # Wait for webserver to start listening
     server.wait_for_open_port(80)
 
-
     # Get the server's IP address dynamically (wait for DHCP)
-    # Exclude 127.0.0.1 and look for non-lo interfaces
-    target_ip = server.wait_until_succeeds("ip -4 addr show eth1 | grep inet | awk '{print $2}' | cut -d/ -f1 | head -n 1").strip()
+    target_ip = server.wait_until_succeeds(
+        "ip -4 addr show eth1 | grep inet | awk '{print $2}' | cut -d/ -f1 | head -n 1"
+    ).strip()
 
     # 1. Run a generic scan (Top 1000 ports) to check for ANY open ports
-    # This ensures forward compatibility: if you add a new service and accidentally expose it, this test will fail.
+    # This ensures forward compatibility: if you add a new service and
+    # accidentally expose it, this test will fail.
     scan_output = scanner.succeed(f"nmap {target_ip} --open")
     print(f"Scan Output:\n{scan_output}")
 
-    # 2. Parse open TCP ports
-    import re
-    # Matches lines like "80/tcp open http"
+    # 2. Parse open TCP ports (matches lines like "80/tcp open http")
     open_ports = re.findall(r"(\d+)/tcp\s+open", scan_output)
 
     # 3. Define the Whitelist (Publicly Allowed Ports)
-    # 22: SSH
-    # 80: HTTP (ACME/Redirect)
-    # 443: HTTPS
-    allowed_ports = ['22', '80', '443']
+    # 22: SSH, 80: HTTP (ACME/Redirect), 443: HTTPS
+    allowed_ports = ["22", "80", "443"]
 
-    # 4. Verify
+    # 4. Verify no unexpected ports are open
     unexpected_ports = [p for p in open_ports if p not in allowed_ports]
-
     if unexpected_ports:
-        raise Exception(f"SECURITY ALERT: Found unexpected open TCP ports: {unexpected_ports}. Check your firewall!")
+        raise Exception(
+            f"SECURITY ALERT: Unexpected open TCP ports: {unexpected_ports}"
+        )
 
     # Verify minimal expected ports are actually open (sanity check)
-    if '22' not in open_ports:
-         raise Exception("sanity check failed: SSH (22) is not open?")
-    if '80' not in open_ports:
-         print("Warning: Port 80 is not open (maybe Nginx not ready or config changed?)")
+    if "22" not in open_ports:
+        raise Exception("Sanity check failed: SSH (22) is not open")
+    if "80" not in open_ports:
+        print("Warning: Port 80 is not open (Nginx not ready or config changed?)")
 
     print("Success: Public firewall is clean. No unexpected ports exposed.")
 
-    # 5. Verify Glance is OFF
-    if '3002' in open_ports:
-         raise Exception("FAILURE: Glance (3002) is open! It should have been removed.")
-    print("Success: Glance port 3002 is closed.")
-
-    # 6. Verify Admin Panel Restriction (should return 403 from outside)
-    # We use -k to ignore self-signed certs in test
-    # We check adguard.crapadouille.fr
-    http_code = scanner.succeed(f"curl -k -o /dev/null -s -w '%{{http_code}}' -H 'Host: adguard.crapadouille.fr' https://{target_ip}/").strip()
+    # 5. Verify admin panels are VPN-restricted (should return 403 from outside)
+    http_code = scanner.succeed(
+        f"curl -k -o /dev/null -s -w '%{{http_code}}' "
+        f"-H 'Host: adguard.crapadouille.fr' https://{target_ip}/"
+    ).strip()
 
     if http_code == "403":
-        print("Success: AdGuard admin panel is correctly restricted (403 Forbidden).")
+        print("Success: AdGuard admin panel is correctly restricted (403).")
     else:
-        # It might be 301 if it redirects, but forceSSL does the redirect logic.
-        # If we hit HTTPS directly, we expect 403.
-        print(f"WARNING: AdGuard admin panel returned {http_code} instead of 403. Check nginx config.")
-        # We enforce it
+        print(f"WARNING: AdGuard returned {http_code} instead of 403.")
         if http_code == "200":
-             raise Exception("SECURITY FAILURE: AdGuard admin panel is publicly accessible!")
+            raise Exception("SECURITY FAILURE: AdGuard is publicly accessible!")
 
-    # Check Homepage
-    http_code_home = scanner.succeed(f"curl -k -o /dev/null -s -w '%{{http_code}}' -H 'Host: home.crapadouille.fr' https://{target_ip}/").strip()
+    # 6. Verify Homepage is restricted
+    http_code_home = scanner.succeed(
+        f"curl -k -o /dev/null -s -w '%{{http_code}}' "
+        f"-H 'Host: home.crapadouille.fr' https://{target_ip}/"
+    ).strip()
+
     if http_code_home == "403":
-         print("Success: Homepage is correctly restricted (403 Forbidden).")
+        print("Success: Homepage is correctly restricted (403).")
     elif http_code_home == "200":
-         raise Exception("SECURITY FAILURE: Homepage is publicly accessible!")
+        raise Exception("SECURITY FAILURE: Homepage is publicly accessible!")
   '';
 }

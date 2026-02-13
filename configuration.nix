@@ -2,6 +2,7 @@
 {
   config,
   pkgs,
+  lib,
   inputs,
   ...
 }: {
@@ -129,7 +130,7 @@
 
   # Users - SSH keys only, no password login
   users.users.root = {
-    hashedPassword = "!"; # Disabled password
+    initialHashedPassword = "!"; # Disabled password
   };
 
   users.users.alois = {
