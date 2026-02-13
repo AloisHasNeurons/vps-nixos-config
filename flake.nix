@@ -49,6 +49,7 @@
         modules = [
           ./configuration.nix
           ./disk-config.nix
+          ./modules/ipv6.nix # Separate: not imported by test VM (no enp1s0 there)
           # Agenix for secrets
           inputs.agenix.nixosModules.default
           # Disko
