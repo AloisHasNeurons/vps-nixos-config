@@ -77,7 +77,7 @@
   age.secrets.immich-env.file = ./secrets/immich-env.age;
 
   networking = {
-    hostName = "nixOS-25_05-4GB-nbg1-1";
+    hostName = "NixOS_VPS-25_05-CX33-fsn1";
 
     # Firewall
     firewall = {
