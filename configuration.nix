@@ -131,7 +131,7 @@
 
   # Users - SSH keys only, no password login
   users.users.root = {
-    initialHashedPassword = "!"; # Disabled password
+    hashedPassword = "!"; # Disabled password
   };
 
   users.users.alois = {
