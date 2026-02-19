@@ -35,6 +35,7 @@
     forEachSystem = f:
       nixpkgs.lib.genAttrs systems (system:
         f {
+          inherit system;
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
@@ -112,19 +113,22 @@
     };
 
     # Package to build a VM for local tests
-    packages = forEachSystem ({pkgs}: {
+    packages = forEachSystem ({pkgs, ...}: {
       vps-vm = self.nixosConfigurations.vps.config.system.build.vm;
     });
 
     # Checks (run by `nix flake check`)
-    checks = forEachSystem ({pkgs}: {
+    checks = forEachSystem ({pkgs, ...}: {
       security = pkgs.callPackage ./tests/security.nix {inherit inputs;};
     });
 
     # Formatter for nix fmt
-    formatter = forEachSystem ({pkgs}: pkgs.alejandra);
+    formatter = forEachSystem ({pkgs, ...}: pkgs.alejandra);
 
-    devShells = forEachSystem ({pkgs}: {
+    devShells = forEachSystem ({
+      pkgs,
+      system,
+    }: {
       default = pkgs.mkShell {
         packages = with pkgs; [
           just

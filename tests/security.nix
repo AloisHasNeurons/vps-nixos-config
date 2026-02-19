@@ -31,6 +31,9 @@ pkgs.testers.nixosTest {
       # Dummy WireGuard key (since we can't decrypt real secrets)
       age.secrets.wireguard-private-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-wg" "YF5X5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q4=");
 
+      # Dummy Grafana secret key (since we can't decrypt real secrets)
+      age.secrets.grafana-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-grafana-key" "0123456789abcdef0123456789abcdef");
+
       # Mock interface for WireGuard to prevent startup failure
       networking.wireguard.interfaces.wg0.privateKeyFile = pkgs.lib.mkForce (toString (pkgs.writeText "dummy-wg" "YF5X5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q4="));
 

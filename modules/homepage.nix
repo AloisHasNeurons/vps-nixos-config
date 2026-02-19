@@ -253,7 +253,7 @@
     ];
 
     # Load environment secrets from agenix (for HOMEPAGE_VAR_* templating)
-    environmentFile = config.age.secrets.homepage-env.path;
+    environmentFiles = [config.age.secrets.homepage-env.path];
 
     # Fix for "Host validation failed" when behind a proxy
     allowedHosts = "home.crapadouille.fr,localhost,127.0.0.1";

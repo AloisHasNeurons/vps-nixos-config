@@ -8,4 +8,5 @@ in {
   "wireguard-private-key.age".publicKeys = users;
   "homepage-env.age".publicKeys = users;
   "immich-env.age".publicKeys = users;
+  "grafana-secret-key.age".publicKeys = users;
 }
