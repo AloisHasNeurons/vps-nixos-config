@@ -75,6 +75,7 @@
   age.secrets.wireguard-private-key.file = ./secrets/wireguard-private-key.age;
   age.secrets.homepage-env.file = ./secrets/homepage-env.age;
   age.secrets.immich-env.file = ./secrets/immich-env.age;
+  age.secrets.grafana-secret-key.file = ./secrets/grafana-secret-key.age;
 
   networking = {
     hostName = "NixOS_VPS-25_05-CX33-fsn1";

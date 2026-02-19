@@ -6,7 +6,6 @@ result-*
 .direnv
 
 # Secrets
-*key*
 secrets/*.txt
 
 # VM

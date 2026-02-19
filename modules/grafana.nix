@@ -67,6 +67,7 @@
         admin_password = "admin"; # Change on first login!
         allow_embedding = true;
         cookie_samesite = "disabled";
+        secret_key = "$__file{/run/agenix/grafana-secret-key}";
       };
 
       "auth.anonymous" = {
