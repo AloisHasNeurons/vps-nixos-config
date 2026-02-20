@@ -143,7 +143,6 @@
     extraGroups = ["wheel"];
     hashedPassword = "$6$XqSAhd1.NSqQ1ar3$NFolR41M2jbwCKvbXmOsFjNy7/ipbX4L3ZXBnP48rj4o4TylhECGZHbWVsMBrYfMrehjt1M28QbPlcFe28TfM0";
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2uzDX8j0gCkpfmB+G9HU3PEEOGp02Nfh4FcIlQ+EWb alois.vincent@imt-atlantique.net"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
     ];
   };
