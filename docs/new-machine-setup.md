@@ -37,7 +37,7 @@ chmod 644 ~/.ssh/id_ed25519.pub
 Verify your key matches one of the keys listed in [`secrets/secrets.nix`](../secrets/secrets.nix):
 ```bash
 cat ~/.ssh/id_ed25519.pub
-# Should match either the "alois" or "alois_laptop" entry
+# Should match one of the keys in secrets.nix
 ```
 
 ### If You Lost Your Keys (New Keypair)
