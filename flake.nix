@@ -33,13 +33,15 @@
     inherit (self) outputs;
     systems = ["x86_64-linux"];
     pythonPyhumpsOverlay = final: prev: {
-      pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-        (python-final: python-prev: {
-          pyhumps = python-prev.pyhumps.overridePythonAttrs (old: {
-            doCheck = false;
-          });
-        })
-      ];
+      pythonPackagesExtensions =
+        prev.pythonPackagesExtensions
+        ++ [
+          (python-final: python-prev: {
+            pyhumps = python-prev.pyhumps.overridePythonAttrs (old: {
+              doCheck = false;
+            });
+          })
+        ];
     };
     forEachSystem = f:
       nixpkgs.lib.genAttrs systems (system:
