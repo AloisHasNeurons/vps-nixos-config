@@ -7,6 +7,7 @@ result-*
 
 # Secrets
 secrets/*.txt
+clients/*.key
 
 # VM
 *.qcow2
