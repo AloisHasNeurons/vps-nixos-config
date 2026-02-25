@@ -32,12 +32,22 @@
   } @ inputs: let
     inherit (self) outputs;
     systems = ["x86_64-linux"];
+    pythonPyhumpsOverlay = final: prev: {
+      pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+        (python-final: python-prev: {
+          pyhumps = python-prev.pyhumps.overridePythonAttrs (old: {
+            doCheck = false;
+          });
+        })
+      ];
+    };
     forEachSystem = f:
       nixpkgs.lib.genAttrs systems (system:
         f {
           inherit system;
           pkgs = import nixpkgs {
             inherit system;
+            overlays = [pythonPyhumpsOverlay];
             config.allowUnfree = true;
           };
         });
@@ -61,7 +71,10 @@
           ./modules/minecraft.nix
           inputs.nix-minecraft.nixosModules.minecraft-servers
           {
-            nixpkgs.overlays = [inputs.nix-minecraft.overlay];
+            nixpkgs.overlays = [
+              inputs.nix-minecraft.overlay
+              pythonPyhumpsOverlay
+            ];
             nixpkgs.config.allowUnfree = true;
           }
           ({
