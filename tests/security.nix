@@ -46,6 +46,9 @@ pkgs.testers.nixosTest {
 
       # Ensure network interfaces get IPs
       networking.useDHCP = true;
+
+      # Avoid evaluation warning for root password
+      users.users.root.hashedPasswordFile = pkgs.lib.mkForce null;
     };
 
     # The attacker/scanner node
