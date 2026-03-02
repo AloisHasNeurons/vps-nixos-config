@@ -72,6 +72,12 @@ jobs:
         # Scan host key now that we have IP
         ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
 
+        # Test SSH connectivity first
+        ssh -o BatchMode=yes deploy@$SERVER_IP echo "SSH connection successful"
+        
+        # Set NIX_SSHOPTS to ensure nix-copy-closure uses the agent
+        export NIX_SSHOPTS="-o IdentityAgent=$SSH_AUTH_SOCK"
+
         # Run rebuild
         nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --use-remote-sudo --target-host deploy@$SERVER_IP
 
