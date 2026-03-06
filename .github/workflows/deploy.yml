@@ -111,14 +111,16 @@ jobs:
           || { echo "❌ CRITICAL: WireGuard not listening!"; exit 1; }
 
         # 5. AdGuard DNS split resolution (photos → VPN IP)
-        ssh deploy@$SERVER_IP "dig @127.0.0.1 photos.crapadouille.fr +short | grep -q '10.100.0.1'" \
+        DNS_RESULT=$(ssh deploy@$SERVER_IP "dig @127.0.0.1 photos.crapadouille.fr +short 2>&1") \
+          && echo "$DNS_RESULT" | grep -q '10.100.0.1' \
           && echo "✅ DNS split resolution: photos → 10.100.0.1" \
-          || { echo "❌ CRITICAL: DNS split resolution broken!"; exit 1; }
+          || { echo "❌ CRITICAL: DNS split resolution broken! dig returned: '$DNS_RESULT'"; exit 1; }
 
         # 6. AdGuard upstream DNS resolution works
-        ssh deploy@$SERVER_IP "dig @127.0.0.1 google.com +short | head -1 | grep -q '.'" \
+        DNS_RESULT=$(ssh deploy@$SERVER_IP "dig @127.0.0.1 google.com +short 2>&1") \
+          && echo "$DNS_RESULT" | head -1 | grep -q '\.' \
           && echo "✅ Upstream DNS resolution works" \
-          || { echo "❌ CRITICAL: Upstream DNS resolution broken!"; exit 1; }
+          || { echo "❌ CRITICAL: Upstream DNS resolution broken! dig returned: '$DNS_RESULT'"; exit 1; }
 
         echo "All smoke tests passed!"
 
