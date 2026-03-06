@@ -112,6 +112,39 @@ jobs:
 
         echo "All smoke tests passed!"
 
+    - name: Post-Deploy Service Health Check
+      if: success()
+      run: |
+        cd terraform
+        SERVER_IP=$(terraform output -raw ipv4_address)
+        cd ..
+
+        echo "Running service health checks..."
+
+        # Nginx HTTPS is responding
+        CODE=$(curl -sk -o /dev/null -w '%{http_code}' https://$SERVER_IP/)
+        [ "$CODE" = "200" ] \
+          && echo "✅ Nginx HTTPS responding" \
+          || { echo "❌ Nginx not responding on HTTPS (got $CODE)"; exit 1; }
+
+        # Immich public proxy is reachable
+        CODE=$(curl -sk -o /dev/null -w '%{http_code}' \
+          -H 'Host: photos.crapadouille.fr' https://$SERVER_IP/)
+        echo "$CODE" | grep -qE '200|302' \
+          && echo "✅ Immich public proxy responding" \
+          || { echo "❌ Immich public proxy not responding (got $CODE)"; exit 1; }
+
+        # VPN-restricted services return 403 from outside
+        for host in adguard mealie home grafana; do
+          CODE=$(curl -sk -o /dev/null -w '%{http_code}' \
+            -H "Host: $host.crapadouille.fr" https://$SERVER_IP/)
+          [ "$CODE" = "403" ] \
+            && echo "✅ $host.crapadouille.fr correctly restricted (403)" \
+            || { echo "❌ $host.crapadouille.fr returned $CODE (expected 403)"; exit 1; }
+        done
+
+        echo "All service health checks passed!"
+
     - name: Check Reboot Status
       if: success()
       run: |
