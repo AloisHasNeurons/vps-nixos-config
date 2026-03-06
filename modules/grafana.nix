@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{...}: {
   # Prometheus - Metrics collection
   services.prometheus = {
     enable = true;

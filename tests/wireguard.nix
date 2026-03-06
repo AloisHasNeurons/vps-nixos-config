@@ -19,11 +19,7 @@ pkgs.testers.nixosTest {
 
   nodes = {
     # ── Server: runs the real config with test overrides ──
-    server = {
-      config,
-      pkgs,
-      ...
-    }: {
+    server = {pkgs, ...}: {
       _module.args.inputs = inputs;
 
       imports = [
@@ -80,7 +76,7 @@ pkgs.testers.nixosTest {
     };
   };
 
-  testScript = {nodes, ...}: ''
+  testScript = {...}: ''
     start_all()
 
     # Wait for all machines to boot

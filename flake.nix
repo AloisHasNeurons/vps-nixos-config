@@ -32,12 +32,12 @@
   } @ inputs: let
     inherit (self) outputs;
     systems = ["x86_64-linux"];
-    pythonPyhumpsOverlay = final: prev: {
+    pythonPyhumpsOverlay = _: prev: {
       pythonPackagesExtensions =
         prev.pythonPackagesExtensions
         ++ [
-          (python-final: python-prev: {
-            pyhumps = python-prev.pyhumps.overridePythonAttrs (old: {
+          (_: python-prev: {
+            pyhumps = python-prev.pyhumps.overridePythonAttrs (_: {
               doCheck = false;
             });
           })
@@ -79,11 +79,7 @@
             ];
             nixpkgs.config.allowUnfree = true;
           }
-          ({
-            config,
-            pkgs,
-            ...
-          }: {
+          ({pkgs, ...}: {
             virtualisation.vmVariant = {
               virtualisation = {
                 graphics = false;
@@ -128,7 +124,7 @@
     };
 
     # Package to build a VM for local tests
-    packages = forEachSystem ({pkgs, ...}: {
+    packages = forEachSystem ({...}: {
       vps-vm = self.nixosConfigurations.vps.config.system.build.vm;
     });
 

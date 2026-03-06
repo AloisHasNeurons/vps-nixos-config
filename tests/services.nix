@@ -20,11 +20,7 @@ pkgs.testers.nixosTest {
   skipTypeCheck = true;
 
   nodes = {
-    server = {
-      config,
-      pkgs,
-      ...
-    }: {
+    server = {pkgs, ...}: {
       _module.args.inputs = inputs;
 
       imports = [
@@ -56,7 +52,7 @@ pkgs.testers.nixosTest {
     };
   };
 
-  testScript = {nodes, ...}: ''
+  testScript = {...}: ''
     start_all()
 
     server.wait_for_unit("multi-user.target")

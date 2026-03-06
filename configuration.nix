@@ -1,11 +1,5 @@
 # /Documents/nix-config/vps/configuration.nix
-{
-  config,
-  pkgs,
-  lib,
-  inputs,
-  ...
-}: {
+{pkgs, ...}: {
   imports = [
     ./modules/adguard.nix
     ./modules/grafana.nix

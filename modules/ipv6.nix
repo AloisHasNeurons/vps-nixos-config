@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{...}: {
   # Static IPv6 for Hetzner Cloud
   # Required because IPv6 forwarding (for WireGuard NAT66) disables SLAAC (accept_ra)
   # This module is NOT imported by the test VM (which doesn't have enp1s0)

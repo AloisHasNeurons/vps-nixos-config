@@ -1,9 +1,4 @@
-{
-  config,
-  pkgs,
-  lib,
-  ...
-}: {
+{config, ...}: {
   # Immich - Self-hosted photo and video management
   services.immich = {
     enable = true;

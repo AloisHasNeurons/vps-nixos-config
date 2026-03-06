@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{...}: {
   services.adguardhome = {
     enable = true;
     mutableSettings = false;

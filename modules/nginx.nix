@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: let
+{...}: let
   domain = "crapadouille.fr";
 in {
   # ACME (Let's Encrypt) configuration

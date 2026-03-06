@@ -1,9 +1,4 @@
-{
-  config,
-  pkgs,
-  lib,
-  ...
-}: {
+{pkgs, ...}: {
   # Kernel hardening
   boot.kernelPackages = pkgs.linuxPackages_hardened;
 

@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{...}: {
   # Enable Podman (Daemonless container engine)
   virtualisation.oci-containers.backend = "podman";
   virtualisation.podman = {

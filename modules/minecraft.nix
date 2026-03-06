@@ -1,8 +1,4 @@
-{
-  pkgs,
-  inputs,
-  ...
-}: {
+{pkgs, ...}: {
   # 1. Open the Gate (Firewall)
   networking.firewall.allowedTCPPorts = [25565];
 

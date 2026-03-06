@@ -11,11 +11,7 @@ pkgs.testers.nixosTest {
 
   nodes = {
     # The server node running our configuration
-    server = {
-      config,
-      pkgs,
-      ...
-    }: {
+    server = {pkgs, ...}: {
       # Pass flake inputs to the module system
       _module.args.inputs = inputs;
 
@@ -57,7 +53,7 @@ pkgs.testers.nixosTest {
     };
   };
 
-  testScript = {nodes, ...}: ''
+  testScript = {...}: ''
     import re
 
     start_all()
