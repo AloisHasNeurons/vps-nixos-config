@@ -60,14 +60,17 @@ pkgs.testers.nixosTest {
     # ══════════════════════════════════════════════
     # Test 1: All critical systemd units are active
     # ══════════════════════════════════════════════
+    # NOTE: Grafana, Homepage, and Immich are excluded because they depend on
+    # agenix secrets (grafana-secret-key, homepage-env, immich-env).
+    # Agenix can't decrypt dummy files in the test VM, so the secret files
+    # under /run/agenix/ never get created and these services fail to start.
+    # They are validated by the post-deploy health check instead.
     critical_units = [
         "nginx.service",
         "adguardhome.service",
-        "grafana.service",
         "prometheus.service",
         "prometheus-node-exporter.service",
         "mealie.service",
-        "homepage-dashboard.service",
         "fail2ban.service",
         "sshd.service",
     ]
@@ -79,15 +82,10 @@ pkgs.testers.nixosTest {
     # ══════════════════════════════════════════════
     # Test 2: Services are listening on expected ports
     # ══════════════════════════════════════════════
-    # Note: Immich (2283) is excluded — it needs a real database and
-    # decrypted secrets to start, which aren't available in the test VM.
-    # Immich is validated by the post-deploy health check instead.
     expected_ports = {
         80: "Nginx HTTP",
         443: "Nginx HTTPS",
         3000: "AdGuard Home",
-        3001: "Homepage",
-        3002: "Grafana",
         9000: "Mealie",
         9090: "Prometheus",
         9100: "Node Exporter",
@@ -105,10 +103,9 @@ pkgs.testers.nixosTest {
     server.succeed("curl -s http://localhost/ | grep -q 'Hello from Nginx!'")
     print("✅ Test 3: Nginx default catch-all responds correctly")
 
-    # VPN-restricted vhosts should return 403 from localhost
-    # (localhost is allowed in nginx config, so they should return 200 or proxy response)
-    # We just verify Nginx doesn't 502/503 (backend is actually running)
-    for vhost in ["adguard", "mealie", "home", "grafana"]:
+    # Verify Nginx proxies to services that are actually running
+    # (excludes Grafana/Homepage whose backends aren't up in the test VM)
+    for vhost in ["adguard", "mealie"]:
         http_code = server.succeed(
             f"curl -sk -o /dev/null -w '%{{http_code}}' "
             f"-H 'Host: {vhost}.crapadouille.fr' https://localhost/"
@@ -135,15 +132,19 @@ pkgs.testers.nixosTest {
     # ══════════════════════════════════════════════
     # Test 5: Monitoring stack connectivity
     # ══════════════════════════════════════════════
-    # Prometheus can scrape node-exporter
-    server.succeed(
-        "curl -s http://127.0.0.1:9100/metrics | grep -q 'node_cpu_seconds_total'"
+    # Note: we download to a file first then grep, because node-exporter
+    # produces very large output and piping directly causes SIGPIPE errors.
+    server.wait_until_succeeds(
+        "curl -sf http://127.0.0.1:9100/metrics -o /tmp/metrics"
+        " && grep -q 'node_cpu_seconds_total' /tmp/metrics",
+        timeout=30
     )
     print("✅ Test 5: Node exporter metrics endpoint is working")
 
     # Prometheus is scraping targets
     server.wait_until_succeeds(
-        "curl -s http://127.0.0.1:9090/api/v1/targets | grep -q 'node'",
+        "curl -sf http://127.0.0.1:9090/api/v1/targets -o /tmp/targets"
+        " && grep -q 'node' /tmp/targets",
         timeout=60
     )
     print("✅ Test 5: Prometheus is scraping node target")

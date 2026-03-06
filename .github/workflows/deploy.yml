@@ -110,6 +110,16 @@ jobs:
           && echo "✅ WireGuard listening" \
           || { echo "❌ CRITICAL: WireGuard not listening!"; exit 1; }
 
+        # 5. AdGuard DNS split resolution (photos → VPN IP)
+        ssh deploy@$SERVER_IP "dig @127.0.0.1 photos.crapadouille.fr +short | grep -q '10.100.0.1'" \
+          && echo "✅ DNS split resolution: photos → 10.100.0.1" \
+          || { echo "❌ CRITICAL: DNS split resolution broken!"; exit 1; }
+
+        # 6. AdGuard upstream DNS resolution works
+        ssh deploy@$SERVER_IP "dig @127.0.0.1 google.com +short | head -1 | grep -q '.'" \
+          && echo "✅ Upstream DNS resolution works" \
+          || { echo "❌ CRITICAL: Upstream DNS resolution broken!"; exit 1; }
+
         echo "All smoke tests passed!"
 
     - name: Post-Deploy Service Health Check
