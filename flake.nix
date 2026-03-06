@@ -135,6 +135,7 @@
     # Checks (run by `nix flake check`)
     checks = forEachSystem ({pkgs, ...}: {
       security = pkgs.callPackage ./tests/security.nix {inherit inputs;};
+      wireguard = pkgs.callPackage ./tests/wireguard.nix {inherit inputs;};
     });
 
     # Formatter for nix fmt
