@@ -102,28 +102,24 @@ pkgs.testers.nixosTest {
 
     print("Success: Public firewall is clean. No unexpected ports exposed.")
 
-    # 5. Verify admin panels are VPN-restricted (should return 403 from outside)
-    http_code = scanner.succeed(
-        f"curl -k -o /dev/null -s -w '%{{http_code}}' "
-        f"-H 'Host: adguard.crapadouille.fr' https://{target_ip}/"
-    ).strip()
+    # 5. Verify ALL VPN-restricted admin panels return 403 from outside
+    vpn_restricted_vhosts = ["adguard", "mealie", "home", "grafana"]
 
-    if http_code == "403":
-        print("Success: AdGuard admin panel is correctly restricted (403).")
-    else:
-        print(f"WARNING: AdGuard returned {http_code} instead of 403.")
-        if http_code == "200":
-            raise Exception("SECURITY FAILURE: AdGuard is publicly accessible!")
+    for vhost in vpn_restricted_vhosts:
+        http_code = scanner.succeed(
+            f"curl -k -o /dev/null -s -w '%{{http_code}}' "
+            f"-H 'Host: {vhost}.crapadouille.fr' https://{target_ip}/"
+        ).strip()
 
-    # 6. Verify Homepage is restricted
-    http_code_home = scanner.succeed(
-        f"curl -k -o /dev/null -s -w '%{{http_code}}' "
-        f"-H 'Host: home.crapadouille.fr' https://{target_ip}/"
-    ).strip()
-
-    if http_code_home == "403":
-        print("Success: Homepage is correctly restricted (403).")
-    elif http_code_home == "200":
-        raise Exception("SECURITY FAILURE: Homepage is publicly accessible!")
+        if http_code == "403":
+            print(f"Success: {vhost}.crapadouille.fr is correctly restricted (403).")
+        elif http_code == "200":
+            raise Exception(
+                f"SECURITY FAILURE: {vhost}.crapadouille.fr is publicly accessible!"
+            )
+        else:
+            print(
+                f"WARNING: {vhost}.crapadouille.fr returned {http_code} instead of 403."
+            )
   '';
 }
