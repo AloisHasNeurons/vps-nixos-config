@@ -38,6 +38,14 @@
     mtu = 1420; # Restored to standard 1420, relying on MSS clamping for fits
     privateKeyFile = config.age.secrets.wireguard-private-key.path;
 
+    # Defensive: Verify IPv4 address was applied (guards against silent failures)
+    postSetup = ''
+      if ! ip addr show wg0 | grep -q 'inet 10.100.0.1/24'; then
+        echo "WARNING: IPv4 not applied to wg0, re-adding..."
+        ip addr add 10.100.0.1/24 dev wg0 || true
+      fi
+    '';
+
     # Use generic masquerade (handled by networking.nat)
     # networking.nat.internalInterfaces = ["wg0"] takes care of forwarding and NAT
 
