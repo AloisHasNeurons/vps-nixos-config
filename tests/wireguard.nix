@@ -130,8 +130,9 @@ pkgs.testers.nixosTest {
 
     # ── Test 8: Upstream DNS resolution through AdGuard ──
     # Verify that AdGuard can resolve external domains (upstream DNS is working)
-    server.wait_until_succeeds(
-        "dig @127.0.0.1 google.com +short | head -1 | grep -q '.'",
+    # Runs on client (which has dnsutils/dig) querying the server via WireGuard
+    client.wait_until_succeeds(
+        "dig @10.100.0.1 google.com +short | head -1 | grep -q '.'",
         timeout=30
     )
     print("✅ Test 8 PASSED: Upstream DNS resolution works through AdGuard")

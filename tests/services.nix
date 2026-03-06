@@ -83,6 +83,9 @@ pkgs.testers.nixosTest {
     # ══════════════════════════════════════════════
     # Test 2: Services are listening on expected ports
     # ══════════════════════════════════════════════
+    # Note: Immich (2283) is excluded — it needs a real database and
+    # decrypted secrets to start, which aren't available in the test VM.
+    # Immich is validated by the post-deploy health check instead.
     expected_ports = {
         80: "Nginx HTTP",
         443: "Nginx HTTPS",
