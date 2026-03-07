@@ -139,11 +139,11 @@ jobs:
 
         echo "Running service health checks..."
 
-        # Nginx HTTPS is responding
-        CODE=$(curl -sk -o /dev/null -w '%{http_code}' https://$SERVER_IP/)
+        # Nginx is responding (the catch-all vhost is HTTP-only)
+        CODE=$(curl -s -o /dev/null -w '%{http_code}' http://$SERVER_IP/)
         [ "$CODE" = "200" ] \
-          && echo "✅ Nginx HTTPS responding" \
-          || { echo "❌ Nginx not responding on HTTPS (got $CODE)"; exit 1; }
+          && echo "✅ Nginx HTTP responding" \
+          || { echo "❌ Nginx not responding on HTTP (got $CODE)"; exit 1; }
 
         # Immich public proxy is reachable
         CODE=$(curl -sk -o /dev/null -w '%{http_code}' \
