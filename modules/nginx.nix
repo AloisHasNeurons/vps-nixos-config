@@ -129,6 +129,19 @@ in {
         };
       };
 
+      "gotify.${domain}" = {
+        enableACME = true;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8080";
+          proxyWebsockets = true;
+          # We don't restrict this to VPN entirely, so the phone can receive
+          # push notifications on cellular without the VPN active.
+          # We only restrict the admin UI if needed, but for simplicity
+          # we keep it open, as Gotify requires authentication for everything.
+        };
+      };
+
       # Default catch-all
       "localhost" = {
         default = true;
