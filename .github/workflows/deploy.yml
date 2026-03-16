@@ -110,6 +110,30 @@ jobs:
           && echo "✅ WireGuard listening" \
           || { echo "❌ CRITICAL: WireGuard not listening!"; exit 1; }
 
+        # 4.5 Sustained Traffic & Conntrack Check
+        echo "Running sustained traffic check..."
+        BASELINE_DROPS=$(ssh deploy@$SERVER_IP "awk '{s+=\$10} END {print s}' /proc/net/stat/nf_conntrack || echo 0")
+        
+        # We can't easily run arbitrary VPN client traffic from the GitHub runner without setting up WireGuard
+        # locally on the runner. But we CAN send UDP traffic internally on the server 
+        # to ensure the conntrack engine processes it correctly.
+        # Let's generate 5s of rapid DNS queries over UDP to localhost to exercise conntrack.
+        ssh deploy@$SERVER_IP "for i in {1..50}; do dig @127.0.0.1 crapadouille.fr +short > /dev/null; sleep 0.1; done"
+        
+        NEW_DROPS=$(ssh deploy@$SERVER_IP "awk '{s+=\$10} END {print s}' /proc/net/stat/nf_conntrack || echo 0")
+        
+        # Bash hex to dec conversion
+        BASELINE_DEC=$((16#''${BASELINE_DROPS:-0}))
+        NEW_DEC=$((16#''${NEW_DROPS:-0}))
+        DROPS_DIFF=$((NEW_DEC - BASELINE_DEC))
+        
+        echo "Conntrack drop counter change: $DROPS_DIFF"
+        if [ "$DROPS_DIFF" -gt 10 ]; then
+          echo "❌ CRITICAL: Conntrack drops spiked by $DROPS_DIFF during smoke test. Possible kernel/firewall misconfiguration!"
+          exit 1
+        fi
+        echo "✅ Conntrack stable during smoke test"
+
         # 5. AdGuard DNS split resolution (photos -> VPN IP)
         # Note: this rewrite is for VPN clients; from the server itself it may
         # return the public IP, so this is a non-blocking check.
