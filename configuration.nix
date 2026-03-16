@@ -12,6 +12,9 @@
 
     ./modules/wireguard.nix
     ./modules/wireguard-monitor.nix
+
+    ./modules/gotify.nix
+    ./modules/alerts.nix
   ];
 
   # Nix Configuration

@@ -10,10 +10,15 @@
     secretsFile = config.age.secrets.immich-env.path;
 
     # Enable machine learning for face recognition and smart search
+    # Enable machine learning for face recognition and smart search
     machine-learning = {
       enable = true;
     };
   };
+
+  # Hook up to our Gotify systemd failure alerts
+  systemd.services.immich-server.unitConfig.OnFailure = "notify-failure@%n.service";
+  systemd.services.immich-machine-learning.unitConfig.OnFailure = "notify-failure@%n.service";
 
   # Ensure the media directory exists with proper permissions
   systemd.tmpfiles.rules = [
