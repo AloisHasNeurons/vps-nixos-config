@@ -56,16 +56,16 @@ pkgs.testers.nixosTest {
       virtualisation.cores = 2;
       users.users.root.hashedPasswordFile = pkgs.lib.mkForce null;
       networking.useDHCP = true;
-      environment.systemPackages = with pkgs; [ iperf3 ];
+      environment.systemPackages = with pkgs; [iperf3];
 
       # Open port for iperf3 test to work over wg0
-      networking.firewall.interfaces.wg0.allowedTCPPorts = [ 5201 ];
-      networking.firewall.interfaces.wg0.allowedUDPPorts = [ 5201 ];
+      networking.firewall.interfaces.wg0.allowedTCPPorts = [5201];
+      networking.firewall.interfaces.wg0.allowedUDPPorts = [5201];
 
       # Start an iperf3 server for sustained traffic testing
       systemd.services.iperf3-server = {
         description = "iperf3 server";
-        wantedBy = [ "multi-user.target" ];
+        wantedBy = ["multi-user.target"];
         serviceConfig = {
           ExecStart = "${pkgs.iperf3}/bin/iperf3 -s";
           Restart = "always";
@@ -135,19 +135,19 @@ pkgs.testers.nixosTest {
     # Record baseline conntrack drop counters from /proc/net/stat/nf_conntrack.
     # The drop column is typically the 10th column in the output.
     baseline_drops = server.succeed("awk '{s+=$10} END {print s}' /proc/net/stat/nf_conntrack || echo 0").strip()
-    
+
     # Generate 5 seconds of sustained TCP traffic (iperf3)
     client.succeed("iperf3 -c 10.100.0.1 -t 5")
-    
+
     # Generate an optional UDP burst (iperf3 -u)
     client.succeed("iperf3 -c 10.100.0.1 -u -b 10M -t 5")
 
     # Check drop counters again
     new_drops = server.succeed("awk '{s+=$10} END {print s}' /proc/net/stat/nf_conntrack || echo 0").strip()
-    
+
     drops_diff = int(new_drops, 16) - int(baseline_drops, 16)
     print(f"Conntrack drop counter change: {drops_diff}")
-    
+
     if drops_diff > 10:
         raise Exception(f"CRITICAL: Conntrack drops spiked by {drops_diff} during traffic burst. Kernel/firewall misconfiguration detected!")
     print("✅ Test 7 PASSED: Sustained traffic completed without high conntrack drops")
