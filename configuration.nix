@@ -11,6 +11,7 @@
     ./modules/security-hardening.nix
 
     ./modules/wireguard.nix
+    ./modules/wireguard-monitor.nix
   ];
 
   # Nix Configuration
