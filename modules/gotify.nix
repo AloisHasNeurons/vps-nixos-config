@@ -1,6 +1,4 @@
 {
-  config,
-  pkgs,
   ...
 }: {
   # Gotify - Self-hosted Push Notification Server
