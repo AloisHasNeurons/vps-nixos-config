@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   # Universal Systemd Failure Notification Service
   #
   # This service is triggered via `OnFailure=notify-failure@%n.service`

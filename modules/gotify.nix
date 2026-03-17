@@ -1,6 +1,4 @@
-{
-  ...
-}: {
+{...}: {
   # Gotify - Self-hosted Push Notification Server
   services.gotify = {
     enable = true;
