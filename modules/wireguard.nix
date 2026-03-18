@@ -34,7 +34,7 @@
 
   # Enable WireGuard dynamic debugging in the kernel to view dropped handshakes/packets
   # These logs will appear in `dmesg` or `journalctl -k`
-  boot.kernelParams = [ "dyndbg=\"module wireguard +p\"" ];
+  boot.kernelParams = ["dyndbg=\"module wireguard +p\""];
 
   networking.wireguard.interfaces.wg0 = {
     ips = ["10.100.0.1/24" "fd10:100::1/64"]; # Server's IP in the VPN (dual-stack)
