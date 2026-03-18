@@ -12,7 +12,6 @@
 
     ./modules/wireguard.nix
     ./modules/wireguard-monitor.nix
-    ./modules/wireguard-pinger.nix
 
     ./modules/gotify.nix
     ./modules/alerts.nix

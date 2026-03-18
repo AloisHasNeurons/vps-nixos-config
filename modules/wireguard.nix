@@ -58,19 +58,16 @@
       {
         publicKey = "geab3hfyFvpm+rSPAr5W37AGVXkDFRbwufmb+5O1QQ4=";
         allowedIPs = ["10.100.0.2/32" "fd10:100::2/128"];
-        persistentKeepalive = 25;
       }
       # Phone (Pixel 9)
       {
         publicKey = "X8MbaQlE7j5P0H8JM2FvMstK6Z/vOctKYBOb7A66Rjw=";
         allowedIPs = ["10.100.0.3/32" "fd10:100::3/128"];
-        persistentKeepalive = 25;
       }
       # Desktop (Windows 11)
       {
         publicKey = "JfYoIMlEdPnyB9SpKEmkgo978F4xEkGBhLv00NHYCTI=";
         allowedIPs = ["10.100.0.4/32" "fd10:100::4/128"];
-        persistentKeepalive = 25;
       }
     ];
   };
