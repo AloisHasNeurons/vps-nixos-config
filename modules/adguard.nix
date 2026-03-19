@@ -39,8 +39,6 @@
         cache_optimistic = true; # Serve expired cache immediately, refresh in background
       };
 
-
-
       filtering = {
         safe_browsing = true;
         safe_search = {
