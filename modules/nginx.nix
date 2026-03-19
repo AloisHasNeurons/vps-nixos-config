@@ -35,9 +35,9 @@ in {
       # VPN/Local -> Immich Direct
       # Public -> Immich Proxy
       geo $remote_addr $immich_backend {
-        default       immich_public_proxy;
-        10.100.0.0/24 immich_vpn_direct;
-        127.0.0.1     immich_vpn_direct;
+        default          immich_public_proxy;
+        100.64.0.0/10    immich_vpn_direct; # Tailscale CGNAT range
+        127.0.0.1        immich_vpn_direct;
       }
     '';
 
@@ -50,7 +50,7 @@ in {
           proxyWebsockets = true;
           # Restrict to VPN
           extraConfig = ''
-            allow 10.100.0.0/24;
+            allow 100.64.0.0/10; # Tailscale CGNAT range
             allow 127.0.0.1;
             deny all;
           '';
@@ -65,7 +65,7 @@ in {
           proxyWebsockets = true;
           # Restrict to VPN
           extraConfig = ''
-            allow 10.100.0.0/24;
+            allow 100.64.0.0/10; # Tailscale CGNAT range
             allow 127.0.0.1;
             deny all;
           '';
@@ -80,7 +80,7 @@ in {
           proxyWebsockets = true;
           # Restrict to VPN
           extraConfig = ''
-            allow 10.100.0.0/24;
+            allow 100.64.0.0/10; # Tailscale CGNAT range
             allow 127.0.0.1;
             deny all;
           '';
@@ -95,7 +95,7 @@ in {
           proxyWebsockets = true;
           # Restrict to VPN
           extraConfig = ''
-            allow 10.100.0.0/24;
+            allow 100.64.0.0/10; # Tailscale CGNAT range
             allow 127.0.0.1;
             deny all;
           '';
