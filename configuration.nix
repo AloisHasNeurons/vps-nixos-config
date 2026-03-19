@@ -10,8 +10,7 @@
     ./modules/nginx.nix
     ./modules/security-hardening.nix
 
-    ./modules/wireguard.nix
-    ./modules/wireguard-monitor.nix
+    ./modules/tailscale.nix
 
     ./modules/gotify.nix
     ./modules/alerts.nix
@@ -71,7 +70,6 @@
 
   # Secrets
   age.identityPaths = ["/etc/ssh/ssh_host_ed25519_key"];
-  age.secrets.wireguard-private-key.file = ./secrets/wireguard-private-key.age;
   age.secrets.homepage-env.file = ./secrets/homepage-env.age;
   age.secrets.immich-env.file = ./secrets/immich-env.age;
   age.secrets.grafana-secret-key = {
@@ -86,13 +84,6 @@
     # Firewall
     firewall = {
       allowedTCPPorts = [22 80 443];
-      allowedUDPPorts = [41820];
-
-      # Allow DNS only on the WireGuard interface
-      interfaces.wg0 = {
-        allowedTCPPorts = [53];
-        allowedUDPPorts = [53];
-      };
     };
   };
 

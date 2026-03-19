@@ -115,8 +115,6 @@
                 ];
               };
 
-              # Use a dummy key for the VM since it cannot decrypt the real secret
-              networking.wireguard.interfaces.wg0.privateKeyFile = pkgs.lib.mkForce "${pkgs.writeText "dummy-wg-key" "YF5X5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q4="}";
             };
           })
         ];
@@ -132,7 +130,6 @@
     checks = forEachSystem ({pkgs, ...}: {
       security = pkgs.callPackage ./tests/security.nix {inherit inputs;};
       services = pkgs.callPackage ./tests/services.nix {inherit inputs;};
-      wireguard = pkgs.callPackage ./tests/wireguard.nix {inherit inputs;};
     });
 
     # Formatter for nix fmt

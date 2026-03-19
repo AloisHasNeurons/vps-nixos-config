@@ -136,11 +136,11 @@
             };
           }
           {
-            WireGuard = {
-              icon = "wireguard.svg";
+            Tailscale = {
+              icon = "tailscale.svg";
               href = "#";
-              description = "VPN Server";
-              ping = "10.100.0.1";
+              description = "Mesh Network";
+              ping = "100.100.100.100";
             };
           }
         ];

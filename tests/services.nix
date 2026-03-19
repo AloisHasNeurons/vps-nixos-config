@@ -31,17 +31,12 @@ pkgs.testers.nixosTest {
       ];
 
       # --- Dummy secrets (can't decrypt real ones in test VM) ---
-      age.secrets.wireguard-private-key.file =
-        pkgs.lib.mkForce (pkgs.writeText "dummy-wg" "YF5X5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q4=");
       age.secrets.grafana-secret-key.file =
         pkgs.lib.mkForce (pkgs.writeText "dummy-grafana" "0123456789abcdef0123456789abcdef");
       age.secrets.immich-env.file =
         pkgs.lib.mkForce (pkgs.writeText "dummy-immich" "DB_PASSWORD=dummy");
       age.secrets.homepage-env.file =
         pkgs.lib.mkForce (pkgs.writeText "dummy-homepage" "HOMEPAGE_VAR=dummy");
-
-      networking.wireguard.interfaces.wg0.privateKeyFile =
-        pkgs.lib.mkForce (toString (pkgs.writeText "dummy-wg" "YF5X5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q5Q5q4="));
 
       # --- VM test overrides ---
       networking.hostName = pkgs.lib.mkForce "server";

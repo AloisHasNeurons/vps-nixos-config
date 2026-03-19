@@ -24,7 +24,7 @@
         ];
 
         bootstrap_dns = ["1.1.1.1" "8.8.8.8" "9.9.9.9"];
-        bind_hosts = ["127.0.0.1" "10.100.0.1" "fd10:100::1"];
+        bind_hosts = ["127.0.0.1" "0.0.0.0"];
         port = 53;
 
         ratelimit = 0;
@@ -39,13 +39,7 @@
         cache_optimistic = true; # Serve expired cache immediately, refresh in background
       };
 
-      # Split DNS: Resolve photos locally when on VPN so Nginx sees VPN IP
-      rewrites = [
-        {
-          domain = "photos.crapadouille.fr";
-          answer = "10.100.0.1";
-        }
-      ];
+
 
       filtering = {
         safe_browsing = true;
