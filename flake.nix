@@ -79,7 +79,7 @@
             ];
             nixpkgs.config.allowUnfree = true;
           }
-          ({pkgs, ...}: {
+          ({ ... }: {
             virtualisation.vmVariant = {
               virtualisation = {
                 graphics = false;
