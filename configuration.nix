@@ -84,6 +84,7 @@
     # Firewall
     firewall = {
       allowedTCPPorts = [22 80 443];
+      trustedInterfaces = ["tailscale0"];
     };
   };
 
