@@ -39,6 +39,17 @@
         cache_optimistic = true; # Serve expired cache immediately, refresh in background
       };
 
+      # Split DNS for Tailscale: resolve services to VPS Tailscale IP (100.109.82.105)
+      # This ensures that devices on the Tailnet connect via Tailscale (peer-to-peer)
+      # instead of the public IP, so Nginx sees a 100.64.x.x source and allows access.
+      rewrites = [
+        {domain = "adguard.crapadouille.fr";  answer = "100.109.82.105";}
+        {domain = "mealie.crapadouille.fr";   answer = "100.109.82.105";}
+        {domain = "home.crapadouille.fr";     answer = "100.109.82.105";}
+        {domain = "grafana.crapadouille.fr";  answer = "100.109.82.105";}
+        {domain = "photos.crapadouille.fr";   answer = "100.109.82.105";}
+      ];
+
       filtering = {
         safe_browsing = true;
         safe_search = {
