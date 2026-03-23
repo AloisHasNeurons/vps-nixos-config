@@ -32,7 +32,7 @@
         {
           Media = {
             style = "row";
-            columns = 1;
+            columns = 4;
           };
         }
         {
@@ -172,6 +172,54 @@
                 url = "http://127.0.0.1:2283";
                 key = "{{HOMEPAGE_VAR_IMMICH_KEY}}"; # API key from Immich admin
               };
+            };
+          }
+          {
+            Jellyfin = {
+              icon = "jellyfin.svg";
+              href = "https://jellyfin.crapadouille.fr";
+              description = "Media Player";
+              ping = "http://127.0.0.1:8096";
+            };
+          }
+          {
+            Jellyseerr = {
+              icon = "jellyseerr.svg";
+              href = "https://jellyseerr.crapadouille.fr";
+              description = "Media Requests";
+              ping = "http://127.0.0.1:5055";
+            };
+          }
+          {
+            Prowlarr = {
+              icon = "prowlarr.svg";
+              href = "https://prowlarr.crapadouille.fr";
+              description = "Indexer Manager";
+              ping = "http://127.0.0.1:9696";
+            };
+          }
+          {
+            Sonarr = {
+              icon = "sonarr.svg";
+              href = "https://sonarr.crapadouille.fr";
+              description = "TV Shows";
+              ping = "http://127.0.0.1:8989";
+            };
+          }
+          {
+            Radarr = {
+              icon = "radarr.svg";
+              href = "https://radarr.crapadouille.fr";
+              description = "Movies";
+              ping = "http://127.0.0.1:7878";
+            };
+          }
+          {
+            Bazarr = {
+              icon = "bazarr.svg";
+              href = "https://bazarr.crapadouille.fr";
+              description = "Subtitles";
+              ping = "http://127.0.0.1:6767";
             };
           }
         ];

@@ -14,6 +14,11 @@
 
     ./modules/gotify.nix
     ./modules/alerts.nix
+
+    # Media Suite
+    ./modules/media.nix
+    ./modules/jellyseerr.nix
+    ./modules/prowlarr.nix
   ];
 
   # Nix Configuration
