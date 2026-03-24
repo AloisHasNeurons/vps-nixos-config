@@ -18,6 +18,7 @@
 
       dns = {
         upstream_dns = [
+          "https://dns.mullvad.net/dns-query"
           "https://dns.google/dns-query"
           "https://dns.cloudflare.com/dns-query"
           "tls://dns.quad9.net"
