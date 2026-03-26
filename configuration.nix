@@ -19,6 +19,7 @@
     ./modules/media.nix
     ./modules/jellyseerr.nix
     ./modules/prowlarr.nix
+    ./modules/seedbox.nix
   ];
 
   # Nix Configuration

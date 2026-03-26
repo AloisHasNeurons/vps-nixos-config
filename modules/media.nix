@@ -5,7 +5,9 @@
   # All media services run under this group so they can all
   # read and write the same files, both now (Jellyfin) and
   # later (when Sonarr/Radarr move files from the seedbox).
-  users.groups.media = {};
+  users.groups.media = {
+    gid = 1500;
+  };
 
   # ─────────────────────────────────────────────────────────────
   # Landing Zone: /mnt/media
