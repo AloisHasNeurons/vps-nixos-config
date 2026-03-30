@@ -38,11 +38,13 @@
         ++ [
           (_: python-prev: {
             pyhumps = python-prev.pyhumps.overridePythonAttrs (_: {
-              doCheck = false;
+              # Bypass upstream patch that fails to apply
+              patches = [];
             });
           })
         ];
     };
+
     forEachSystem = f:
       nixpkgs.lib.genAttrs systems (system:
         f {
