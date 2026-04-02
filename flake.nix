@@ -40,6 +40,7 @@
             pyhumps = python-prev.pyhumps.overridePythonAttrs (_: {
               # Bypass upstream patch that fails to apply
               patches = [];
+              doCheck = false;
             });
           })
         ];
