@@ -1,6 +1,6 @@
 {pkgs, ...}: {
   # Kernel hardening
-  boot.kernelPackages = pkgs.linuxPackages_hardened;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # AppArmor
   security.apparmor = {
