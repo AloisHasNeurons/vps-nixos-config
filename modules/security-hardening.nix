@@ -35,7 +35,7 @@
 
     # 6. Monitor time changes (often used by attackers to obfuscate log timelines)
     #"-a always,exit -F arch=b64 -S adjtimex -S settimeofday -S clock_settime -k time-change"
-  ];
+  #];
 
   # Sysctl hardening
   boot.kernel.sysctl = {
