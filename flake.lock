@@ -109,11 +109,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1776742288,
-        "narHash": "sha256-4kvrkYdNdDF+FM0UVqvV6l2gnwPtjBku3lpTxcIaFT8=",
+        "lastModified": 1776828595,
+        "narHash": "sha256-LkFpFnPTK6H0gwyfYezN3kEKHVxjSdPp/tBnrQRFP3E=",
         "owner": "Infinidoge",
         "repo": "nix-minecraft",
-        "rev": "9bcdf09f184803b32291c3dc08fb6da1b783f1b4",
+        "rev": "28f0f2369655a5910e810c35c698dfaa9ccec692",
         "type": "github"
       },
       "original": {
