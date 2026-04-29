@@ -1,0 +1,45 @@
+name: "Manual Server Reboot"
+
+on:
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions UI
+
+jobs:
+  reboot:
+    name: Reboot VPS
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.10.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    # Install Terraform to get the IP address dynamically, just like in deploy.yml
+    - uses: hashicorp/setup-terraform@v4
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./terraform
+
+    - name: Get IP and Reboot Server
+      run: |
+        cd terraform
+        SERVER_IP=$(terraform output -raw ipv4_address)
+        cd ..
+        
+        echo "Rebooting $SERVER_IP..."
+        
+        # Scan host key
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+
+        # Issue the reboot command. We use || true because the SSH connection 
+        # is expected to drop abruptly when the server goes down.
+        ssh -o BatchMode=yes deploy@$SERVER_IP "sudo reboot" || true
+        
+        echo "Reboot command sent successfully."
