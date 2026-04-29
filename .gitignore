@@ -24,3 +24,5 @@ clients/
 terraform.tfstate
 terraform.tfstate.backup
 secrets/github-actions-deploy
+
+TODO.md
