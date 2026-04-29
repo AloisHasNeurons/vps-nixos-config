@@ -138,7 +138,7 @@
   users.users.alois = {
     isNormalUser = true;
     extraGroups = ["wheel"];
-    hashedPassword = "$6$XqSAhd1.NSqQ1ar3$NFolR41M2jbwCKvbXmOsFjNy7/ipbX4L3ZXBnP48rj4o4TylhECGZHbWVsMBrYfMrehjt1M28QbPlcFe28TfM0";
+    hashedPassword = "$y$j9T$njIq5wNQMvXeHHAgkkqRs.$BPmNgJG96aMqIU48AjXuElMy1xbU6tGmOCw4UTRhlt9";
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
     ];
