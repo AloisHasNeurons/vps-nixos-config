@@ -79,7 +79,7 @@ jobs:
         export NIX_SSHOPTS="-o IdentityAgent=$SSH_AUTH_SOCK"
 
         # Run rebuild
-        nix run nixpkgs#nixos-rebuild -- boot --flake .#vps --use-remote-sudo --target-host deploy@$SERVER_IP
+        nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --use-remote-sudo --target-host deploy@$SERVER_IP
 
     - name: Post-Deploy Smoke Test
       if: success()
