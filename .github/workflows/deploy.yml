@@ -163,7 +163,7 @@ jobs:
 
         echo "All service health checks passed!"
 
-    - name: Check Reboot Status
+    - name: Check and Auto-Reboot
       if: success()
       run: |
         cd terraform
@@ -171,6 +171,11 @@ jobs:
         cd ..
         
         echo "Checking if reboot is required..."
-        # This will exit 1 if reboot is needed, causing the job to fail.
-        # GitHub will send a "Workflow Failed" email notification.
-        ssh deploy@$SERVER_IP "check-reboot"
+        # We run check-reboot. If it exits with 1, a reboot is needed.
+        if ! ssh deploy@$SERVER_IP "check-reboot"; then
+          echo "Reboot required detected! Initiating automatic reboot..."
+          ssh -o BatchMode=yes deploy@$SERVER_IP "sudo reboot" || true
+          echo "Reboot command sent successfully."
+        else
+          echo "No reboot needed."
+        fi
