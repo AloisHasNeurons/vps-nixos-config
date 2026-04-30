@@ -2,12 +2,14 @@
   # Install SSHFS so NixOS knows how to mount external servers via SSH
   environment.systemPackages = [pkgs.sshfs];
 
+  # Add the ultra.cc seedbox to the known hosts
+  programs.ssh.knownHosts."aiko.usbx.me".publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG/3imBwJx2ihSHgTPomnXyQlgmoeTvmQEXxvp5NZBlg";
+
   # ─────────────────────────────────────────────────────────────
   # Ultra.cc Seedbox Mount
   # ─────────────────────────────────────────────────────────────
   fileSystems."/mnt/media" = {
-    # TODO: Replace the two "YOUR_USERNAME" placeholders with your actual ultra.cc username
-    device = "YOUR_USERNAME@aiko.usbx.me:/home/YOUR_USERNAME";
+    device = "carton@aiko.usbx.me:/home/carton";
     fsType = "sshfs";
 
     # We use systemd automount so the boot process doesn't hang if the seedbox is down.
@@ -18,8 +20,8 @@
       "_netdev"
 
       # SSH Connection Settings
-      "IdentityFile=/root/.ssh/id_ed25519_ultra" # Path to the SSH key we will create
-      "StrictHostKeyChecking=accept-new" # Automatically accept the aiko.usbx.me footprint
+      "IdentityFile=/run/agenix/seedbox-ssh" # Path to the SSH key provided by agenix
+      "StrictHostKeyChecking=yes" # Verify host key against system knownHosts
       "ServerAliveInterval=15" # Ping every 15s to keep connection alive
       "ServerAliveCountMax=3"
       "reconnect"

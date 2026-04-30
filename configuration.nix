@@ -83,6 +83,7 @@
     owner = "grafana";
     group = "grafana";
   };
+  age.secrets.seedbox-ssh.file = ./secrets/seedbox-ssh.age;
 
   networking = {
     hostName = "NixOS_VPS-25_05-CX33-fsn1";
