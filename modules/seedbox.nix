@@ -9,7 +9,7 @@
   # Ultra.cc Seedbox Mount
   # ─────────────────────────────────────────────────────────────
   fileSystems."/mnt/media" = {
-    device = "carton@aiko.usbx.me:/home/carton";
+    device = "carton@aiko.usbx.me:";
     fsType = "sshfs";
 
     # We use systemd automount so the boot process doesn't hang if the seedbox is down.
