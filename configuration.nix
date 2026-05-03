@@ -1,6 +1,5 @@
 # /Documents/nix-config/vps/configuration.nix
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   imports = [
     ./modules/adguard.nix
     ./modules/grafana.nix
@@ -68,7 +67,7 @@
     enable = true;
     efiSupport = true;
     efiInstallAsRemovable = true;
-    devices = [ "/dev/sda" ];
+    devices = ["/dev/sda"];
   };
 
   # Kernel modules for Hetzner cloud VMs (virtio drivers)
@@ -85,7 +84,7 @@
   time.timeZone = "Europe/Paris";
 
   # Secrets
-  age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+  age.identityPaths = ["/etc/ssh/ssh_host_ed25519_key"];
   age.secrets.homepage-env.file = ./secrets/homepage-env.age;
   age.secrets.immich-env.file = ./secrets/immich-env.age;
   age.secrets.grafana-secret-key = {
@@ -105,7 +104,7 @@
         80
         443
       ];
-      trustedInterfaces = [ "tailscale0" ];
+      trustedInterfaces = ["tailscale0"];
     };
   };
 
@@ -152,7 +151,7 @@
 
   users.users.alois = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    extraGroups = ["wheel"];
     hashedPassword = "$y$j9T$njIq5wNQMvXeHHAgkkqRs.$BPmNgJG96aMqIU48AjXuElMy1xbU6tGmOCw4UTRhlt9";
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
@@ -161,7 +160,7 @@
 
   users.users.deploy = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    extraGroups = ["wheel"];
     hashedPassword = "!"; # Keys only
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA/J/t0j3ylcxgXjMOfol8JL0RuuoKAjVvP3X+34o/DF github-actions-deploy"
@@ -173,11 +172,11 @@
   # Allow deploy user to run sudo without password (for CI/CD)
   security.sudo.extraRules = [
     {
-      users = [ "deploy" ];
+      users = ["deploy"];
       commands = [
         {
           command = "ALL";
-          options = [ "NOPASSWD" ];
+          options = ["NOPASSWD"];
         }
       ];
     }
