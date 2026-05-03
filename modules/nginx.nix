@@ -144,94 +144,94 @@ in {
 
       # ── Media Suite (Tailscale only) ──────────────────────────────
 
-      "jellyfin.${domain}" = {
-        enableACME = true;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:8096";
-          proxyWebsockets = true;
-          extraConfig = ''
-            allow 100.64.0.0/10; # Tailscale CGNAT range
-            allow 127.0.0.1;
-            deny all;
-
-            # Allow large media streaming responses
-            client_max_body_size 0;
-            proxy_read_timeout 600s;
-            proxy_send_timeout 600s;
-          '';
-        };
-      };
-
-      "jellyseerr.${domain}" = {
-        enableACME = true;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:5055";
-          proxyWebsockets = true;
-          extraConfig = ''
-            allow 100.64.0.0/10; # Tailscale CGNAT range
-            allow 127.0.0.1;
-            deny all;
-          '';
-        };
-      };
-
-      "prowlarr.${domain}" = {
-        enableACME = true;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:9696";
-          proxyWebsockets = true;
-          extraConfig = ''
-            allow 100.64.0.0/10; # Tailscale CGNAT range
-            allow 127.0.0.1;
-            deny all;
-          '';
-        };
-      };
-
-      "sonarr.${domain}" = {
-        enableACME = true;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:8989";
-          proxyWebsockets = true;
-          extraConfig = ''
-            allow 100.64.0.0/10; # Tailscale CGNAT range
-            allow 127.0.0.1;
-            deny all;
-          '';
-        };
-      };
-
-      "radarr.${domain}" = {
-        enableACME = true;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:7878";
-          proxyWebsockets = true;
-          extraConfig = ''
-            allow 100.64.0.0/10; # Tailscale CGNAT range
-            allow 127.0.0.1;
-            deny all;
-          '';
-        };
-      };
-
-      "bazarr.${domain}" = {
-        enableACME = true;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:6767";
-          proxyWebsockets = true;
-          extraConfig = ''
-            allow 100.64.0.0/10; # Tailscale CGNAT range
-            allow 127.0.0.1;
-            deny all;
-          '';
-        };
-      };
+      # "jellyfin.${domain}" = {
+      #   enableACME = true;
+      #   forceSSL = true;
+      #   locations."/" = {
+      #     proxyPass = "http://127.0.0.1:8096";
+      #     proxyWebsockets = true;
+      #     extraConfig = ''
+      #       allow 100.64.0.0/10; # Tailscale CGNAT range
+      #       allow 127.0.0.1;
+      #       deny all;
+      #
+      #       # Allow large media streaming responses
+      #       client_max_body_size 0;
+      #       proxy_read_timeout 600s;
+      #       proxy_send_timeout 600s;
+      #     '';
+      #   };
+      # };
+      #
+      # "jellyseerr.${domain}" = {
+      #   enableACME = true;
+      #   forceSSL = true;
+      #   locations."/" = {
+      #     proxyPass = "http://127.0.0.1:5055";
+      #     proxyWebsockets = true;
+      #     extraConfig = ''
+      #       allow 100.64.0.0/10; # Tailscale CGNAT range
+      #       allow 127.0.0.1;
+      #       deny all;
+      #     '';
+      #   };
+      # };
+      #
+      # "prowlarr.${domain}" = {
+      #   enableACME = true;
+      #   forceSSL = true;
+      #   locations."/" = {
+      #     proxyPass = "http://127.0.0.1:9696";
+      #     proxyWebsockets = true;
+      #     extraConfig = ''
+      #       allow 100.64.0.0/10; # Tailscale CGNAT range
+      #       allow 127.0.0.1;
+      #       deny all;
+      #     '';
+      #   };
+      # };
+      #
+      # "sonarr.${domain}" = {
+      #   enableACME = true;
+      #   forceSSL = true;
+      #   locations."/" = {
+      #     proxyPass = "http://127.0.0.1:8989";
+      #     proxyWebsockets = true;
+      #     extraConfig = ''
+      #       allow 100.64.0.0/10; # Tailscale CGNAT range
+      #       allow 127.0.0.1;
+      #       deny all;
+      #     '';
+      #   };
+      # };
+      #
+      # "radarr.${domain}" = {
+      #   enableACME = true;
+      #   forceSSL = true;
+      #   locations."/" = {
+      #     proxyPass = "http://127.0.0.1:7878";
+      #     proxyWebsockets = true;
+      #     extraConfig = ''
+      #       allow 100.64.0.0/10; # Tailscale CGNAT range
+      #       allow 127.0.0.1;
+      #       deny all;
+      #     '';
+      #   };
+      # };
+      #
+      # "bazarr.${domain}" = {
+      #   enableACME = true;
+      #   forceSSL = true;
+      #   locations."/" = {
+      #     proxyPass = "http://127.0.0.1:6767";
+      #     proxyWebsockets = true;
+      #     extraConfig = ''
+      #       allow 100.64.0.0/10; # Tailscale CGNAT range
+      #       allow 127.0.0.1;
+      #       deny all;
+      #     '';
+      #   };
+      # };
 
       # Default catch-all
       "localhost" = {

@@ -16,15 +16,21 @@
     ./modules/alerts.nix
 
     # Media Suite
-    ./modules/media.nix
-    ./modules/jellyseerr.nix
-    ./modules/prowlarr.nix
-    ./modules/seedbox.nix
+    # ./modules/media.nix
+    # ./modules/jellyseerr.nix
+    # ./modules/prowlarr.nix
+    # ./modules/seedbox.nix
   ];
 
   # Nix Configuration
-  nix.settings.trusted-users = ["root" "@wheel"];
-  nix.settings.experimental-features = ["nix-command" "flakes"];
+  nix.settings.trusted-users = [
+    "root"
+    "@wheel"
+  ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   # Automatic Garbage Collection
   nix.gc = {
@@ -83,14 +89,18 @@
     owner = "grafana";
     group = "grafana";
   };
-  age.secrets.seedbox-ssh.file = ./secrets/seedbox-ssh.age;
+  # age.secrets.seedbox-ssh.file = ./secrets/seedbox-ssh.age;
 
   networking = {
     hostName = "NixOS_VPS-25_05-CX33-fsn1";
 
     # Firewall
     firewall = {
-      allowedTCPPorts = [22 80 443];
+      allowedTCPPorts = [
+        22
+        80
+        443
+      ];
       trustedInterfaces = ["tailscale0"];
     };
   };
