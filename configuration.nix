@@ -1,25 +1,25 @@
 # /Documents/nix-config/vps/configuration.nix
 {pkgs, ...}: {
   imports = [
-    ./modules/adguard.nix
-    ./modules/grafana.nix
-    ./modules/homepage.nix
-    ./modules/immich.nix
-    ./modules/immich-public-proxy.nix
-    ./modules/mealie.nix
-    ./modules/nginx.nix
-    ./modules/security-hardening.nix
+    ./modules/services/adguard.nix
+    ./modules/monitoring/grafana.nix
+    ./modules/services/homepage.nix
+    ./modules/services/immich.nix
+    ./modules/services/immich-public-proxy.nix
+    ./modules/services/mealie.nix
+    ./modules/services/nginx.nix
+    ./modules/system/security-hardening.nix
 
-    ./modules/tailscale.nix
+    ./modules/networking/tailscale.nix
 
-    ./modules/gotify.nix
-    ./modules/alerts.nix
+    ./modules/services/gotify.nix
+    ./modules/monitoring/alerts.nix
 
     # Media Suite
-    # ./modules/media.nix
-    # ./modules/jellyseerr.nix
-    # ./modules/prowlarr.nix
-    # ./modules/seedbox.nix
+    # ./modules/media/media.nix
+    # ./modules/media/jellyseerr.nix
+    # ./modules/media/prowlarr.nix
+    # ./modules/media/seedbox.nix
   ];
 
   # Nix Configuration
