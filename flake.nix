@@ -84,7 +84,7 @@
           {nixpkgs.hostPlatform = "x86_64-linux";}
 
           # Minecraft
-          ./modules/services/minecraft.nix
+          ./modules/services/minecraft/minecraft.nix
           inputs.nix-minecraft.nixosModules.minecraft-servers
           {
             nixpkgs.overlays = [
