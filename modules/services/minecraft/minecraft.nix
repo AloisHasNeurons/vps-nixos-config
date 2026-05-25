@@ -56,10 +56,13 @@
           # }
         ];
 
-        # Mods (Local Directory Method)
-        symlinks = {
-          "mods" = ./mods;
-        };
+        # Dynamically link each mod individually so Fabric sees a normal directory
+        symlinks = builtins.listToAttrs (
+          map (name: {
+            name = "mods/${name}";
+            value = ./mods + "/${name}";
+          }) (builtins.attrNames (builtins.readDir ./mods))
+        );
       };
     };
   };
