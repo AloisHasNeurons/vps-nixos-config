@@ -43,6 +43,18 @@
           max-players = 10;
           motd = "Sanctuary";
         };
+
+        # Declarative whitelist
+        files."whitelist.json".value = [
+          {
+            name = "CartonBrutal";
+            uuid = "9e761732-0263-41bd-93d2-2defd746816e";
+          }
+          # {
+          #   name = "FriendsUsername";
+          #   uuid = "friends-minecraft-uuid";
+          # }
+        ];
       };
     };
   };
