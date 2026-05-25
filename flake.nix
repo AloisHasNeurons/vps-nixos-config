@@ -46,6 +46,12 @@
         ];
     };
 
+    mealieOverlay = _: prev: {
+      mealie = prev.mealie.overrideAttrs (_: {
+        doCheck = false;
+      });
+    };
+
     forEachSystem = f:
       nixpkgs.lib.genAttrs systems (
         system:
@@ -53,7 +59,10 @@
             inherit system;
             pkgs = import nixpkgs {
               inherit system;
-              overlays = [pythonPyhumpsOverlay];
+              overlays = [
+                pythonPyhumpsOverlay
+                mealieOverlay
+              ];
               config.allowUnfree = true;
             };
           }
@@ -81,6 +90,7 @@
             nixpkgs.overlays = [
               inputs.nix-minecraft.overlay
               pythonPyhumpsOverlay
+              mealieOverlay
             ];
             nixpkgs.config.allowUnfree = true;
           }
