@@ -56,6 +56,16 @@
           # }
         ];
 
+        # Declarative operators
+        files."ops.json".value = [
+          {
+            name = "CartonBrutal";
+            uuid = "9e761732-0263-41bd-93d2-2defd746816e";
+            level = 4;
+            bypassesPlayerLimit = true;
+          }
+        ];
+
         # Dynamically link each mod individually so Fabric sees a normal directory
         symlinks = builtins.listToAttrs (
           map (name: {
