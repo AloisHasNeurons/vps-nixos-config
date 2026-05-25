@@ -41,7 +41,7 @@
           view-distance = 10; # Keep low, let Distant Horizons handle visuals
           simulation-distance = 10;
           max-players = 10;
-          motd = "Sanctuary";
+          motd = "Serveur trop cool d'Aloïs avec Distant Horizons et Tectonic";
         };
 
         # Declarative whitelist
@@ -81,6 +81,6 @@
   environment.systemPackages = [
     (pkgs.writeShellScriptBin "mc-start" "exec systemctl start minecraft-server-fabric-server")
     (pkgs.writeShellScriptBin "mc-stop" "exec systemctl stop minecraft-server-fabric-server")
-    (pkgs.writeShellScriptBin "mc-console" "exec nix-minecraft-console fabric-server")
+    (pkgs.writeShellScriptBin "mc-console" "nix-shell -p tmux --run 'sudo -u minecraft TERM=xterm-256color tmux -S /run/minecraft/fabric-server.sock attach'")
   ];
 }
