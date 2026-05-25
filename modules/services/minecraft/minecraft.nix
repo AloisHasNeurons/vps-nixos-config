@@ -24,7 +24,7 @@
           jre_headless = pkgs.jdk25_headless;
         };
         # RAM tuning:
-        jvmOpts = "-Xms4G -Xmx4G -XX:+UseG1GC";
+        jvmOpts = "-Xms1G -Xmx4G -XX:+UseG1GC";
 
         serverProperties = {
           server-port = 25565;
