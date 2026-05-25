@@ -19,9 +19,10 @@
       fabric-server = {
         enable = true;
         autoStart = false;
-        package = pkgs.fabricServers.fabric-26_1_2;
-        jvmPackage = pkgs.jdk25_headless;
-
+        # Use jre_headless directly on the Fabric package
+        package = pkgs.fabricServers.fabric-26_1_2.override {
+          jre_headless = pkgs.jdk25_headless;
+        };
         # RAM tuning:
         jvmOpts = "-Xms4G -Xmx4G -XX:+UseG1GC";
 
