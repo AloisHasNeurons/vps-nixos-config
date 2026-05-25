@@ -20,6 +20,7 @@
         enable = true;
         autoStart = false;
         package = pkgs.fabricServers.fabric-26_1_2;
+        jvmPackage = pkgs.jdk25_headless;
 
         # RAM tuning:
         jvmOpts = "-Xms4G -Xmx4G -XX:+UseG1GC";
