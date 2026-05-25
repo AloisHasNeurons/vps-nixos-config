@@ -90,7 +90,7 @@
             (pkgs.fetchurl {
               name = "distant_horizons.jar";
               url = "https://cdn.modrinth.com/data/uCdwusMi/versions/FJrLlu3p/DistantHorizons-3.0.3-b-26.1.2-fabric-neoforge.jar";
-              hash = "sha256-USaJ9+6TBVwSbAMXDiRVhqcQP2hZYQM8lSb3Ai10FMQ=";
+              hash = "sha256-bvQZMYQ/VCaIsU4L95JgWuK8F691zgFYYWEkfv/sMVU=";
             })
           ];
         };
