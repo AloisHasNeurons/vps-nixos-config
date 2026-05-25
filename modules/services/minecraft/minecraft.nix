@@ -70,7 +70,7 @@
         symlinks = builtins.listToAttrs (
           map (name: {
             name = "mods/${name}";
-            value = ./mods + "/${name}";
+            value = "${./mods}/${name}";
           }) (builtins.attrNames (builtins.readDir ./mods))
         );
       };
