@@ -19,6 +19,10 @@
       fabric-server = {
         enable = true;
         autoStart = false;
+
+        # Disable hibernation
+        serverProperties.enable-status = true;
+        
         # Use jre_headless directly on the Fabric package
         package = pkgs.fabricServers.fabric-26_1_2.override {
           jre_headless = pkgs.jdk25_headless;
