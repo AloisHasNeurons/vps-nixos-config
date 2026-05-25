@@ -61,36 +61,43 @@
               name = "fabric-api.jar";
               url = "https://cdn.modrinth.com/data/P7dR8mSH/versions/BLz7ETCw/fabric-api-0.149.1%2B26.1.2.jar";
               hash = "sha256-AK3p/e5wgWhGt6oh+i3U4NPxHgNEzmBvuLWAp+r/dk0=";
+              curlOptsList = ["-A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"];
             })
             (pkgs.fetchurl {
               name = "lithium.jar";
               url = "https://cdn.modrinth.com/data/gvQqBUqZ/versions/R7MxYvuW/lithium-fabric-0.24.2%2Bmc26.1.2.jar";
               hash = "sha256-hYNRXAnYqsz/ltVJbiMhqUoZlkruxDf5RjhWo7dRGF8=";
+              curlOptsList = ["-A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"];
             })
             (pkgs.fetchurl {
               name = "ferritecore.jar";
               url = "https://cdn.modrinth.com/data/uXXizFIs/versions/d5ddUdiB/ferritecore-9.0.0-fabric.jar";
               hash = "sha256-O3Io3FwxmBUDEdqjpSy6tkVzhpDEmNm2dSCg8ODEfaA=";
+              curlOptsList = ["-A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"];
             })
             (pkgs.fetchurl {
               name = "noisium.jar";
               url = "https://cdn.modrinth.com/data/hasdd01q/versions/QWyo5TsS/noisium-fabric-2.8.4%2Bmc26.1-pre-2.jar";
               hash = "sha256-fQjDZ/APXxsURHoegrL/M4A1C5Wa2V8XN2LKgltzYBI=";
+              curlOptsList = ["-A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"];
             })
             (pkgs.fetchurl {
               name = "tectonic.jar";
               url = "https://cdn.modrinth.com/data/lWDHr9jE/versions/jL2ZsTzx/tectonic-3.0.22-fabric-26.1.jar";
               hash = "sha256-JJL2mqOq7zgjgmbrkRTz/3AcY/dIcjbAbV5NZolqcCk=";
+              curlOptsList = ["-A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"];
             })
             (pkgs.fetchurl {
               name = "terralith.jar";
               url = "https://cdn.modrinth.com/data/8oi3bsk5/versions/FCzSjHeG/Terralith_26.1_v2.6.2_Fabric.jar";
               hash = "sha256-xTFF5E/6NfgBQkv19DqW9mpfT/kXuvk82ZxSZ3J54Yo=";
+              curlOptsList = ["-A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"];
             })
             (pkgs.fetchurl {
               name = "distant_horizons.jar";
               url = "https://cdn.modrinth.com/data/uCdwusMi/versions/FJrLlu3p/DistantHorizons-3.0.3-b-26.1.2-fabric-neoforge.jar";
-              hash = "sha256-bvQZMYQ/VCaIsU4L95JgWuK8F691zgFYYWEkfv/sMVU=";
+              hash = "sha256-USaJ9+6TBVwSbAMXDiRVhqcQP2hZYQM8lSb3Ai10FMQ=";
+              curlOptsList = ["-A" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"];
             })
           ];
         };
