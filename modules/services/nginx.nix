@@ -9,7 +9,7 @@ in {
       extraDomainNames = [ "*.${domain}" ];
       dnsProvider = "ovh";
       dnsPropagationCheck = true;
-      credentialsFile = "/var/lib/acme/ovh.env";
+      environmentFile = "/var/lib/acme/ovh.env";
       group = "nginx"; # Gives Nginx permission to read the keys
     };
   };
