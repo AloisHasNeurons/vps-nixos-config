@@ -1,16 +1,16 @@
 {...}: let
   domain = "crapadouille.fr";
 in {
-  # ACME (Let's Encrypt) configuration
+  # ACME (Let's Encrypt) global configuration
   security.acme = {
     acceptTerms = true;
-    defaults.email = "alois.vincent@imt-atlantique.net";
-    certs."home.crapadouille.fr" = {
+    defaults = {
+      email = "alois.vincent@imt-atlantique.net";
       dnsProvider = "ovh";
       dnsPropagationCheck = true;
       credentialsFile = "/var/lib/acme/ovh.env";
-    }
-  }
+    };
+  };
 
   services.nginx = {
     enable = true;
