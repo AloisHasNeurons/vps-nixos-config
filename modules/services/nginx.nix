@@ -1,14 +1,16 @@
 {...}: let
   domain = "crapadouille.fr";
 in {
-  # ACME (Let's Encrypt) global configuration
+  # ACME Wildcard Configuration
   security.acme = {
     acceptTerms = true;
-    defaults = {
-      email = "alois.vincent@imt-atlantique.net";
+    defaults.email = "alois.vincent@imt-atlantique.net";
+    certs."${domain}" = {
+      extraDomainNames = [ "*.${domain}" ];
       dnsProvider = "ovh";
       dnsPropagationCheck = true;
       credentialsFile = "/var/lib/acme/ovh.env";
+      group = "nginx"; # Gives Nginx permission to read the keys
     };
   };
 
@@ -48,7 +50,7 @@ in {
 
     virtualHosts = {
       "adguard.${domain}" = {
-        enableACME = true;
+        useACMEHost = domain;
         forceSSL = true;
         locations."/" = {
           proxyPass = "http://127.0.0.1:3000";
@@ -63,7 +65,7 @@ in {
       };
 
       "mealie.${domain}" = {
-        enableACME = true;
+        useACMEHost = domain;
         forceSSL = true;
         locations."/" = {
           proxyPass = "http://127.0.0.1:9000";
@@ -78,7 +80,7 @@ in {
       };
 
       "home.${domain}" = {
-        enableACME = true;
+        useACMEHost = domain;
         forceSSL = true;
         locations."/" = {
           proxyPass = "http://127.0.0.1:3001";
@@ -93,7 +95,7 @@ in {
       };
 
       "grafana.${domain}" = {
-        enableACME = true;
+        useACMEHost = domain;
         forceSSL = true;
         locations."/" = {
           proxyPass = "http://127.0.0.1:3002";
@@ -108,7 +110,7 @@ in {
       };
 
       "photos.${domain}" = {
-        enableACME = true;
+        useACMEHost = domain;
         forceSSL = true;
         locations."/" = {
           proxyPass = "http://$immich_backend";
@@ -135,7 +137,7 @@ in {
       };
 
       "gotify.${domain}" = {
-        enableACME = true;
+        useACMEHost = domain;
         forceSSL = true;
         locations."/" = {
           proxyPass = "http://127.0.0.1:8080";
@@ -150,7 +152,7 @@ in {
       # ── Media Suite (Tailscale only) ──────────────────────────────
 
       # "jellyfin.${domain}" = {
-      #   enableACME = true;
+      #   useACMEHost = domain;
       #   forceSSL = true;
       #   locations."/" = {
       #     proxyPass = "http://127.0.0.1:8096";
@@ -169,7 +171,7 @@ in {
       # };
       #
       # "jellyseerr.${domain}" = {
-      #   enableACME = true;
+      #   useACMEHost = domain;
       #   forceSSL = true;
       #   locations."/" = {
       #     proxyPass = "http://127.0.0.1:5055";
@@ -183,7 +185,7 @@ in {
       # };
       #
       # "prowlarr.${domain}" = {
-      #   enableACME = true;
+      #   useACMEHost = domain;
       #   forceSSL = true;
       #   locations."/" = {
       #     proxyPass = "http://127.0.0.1:9696";
@@ -197,7 +199,7 @@ in {
       # };
       #
       # "sonarr.${domain}" = {
-      #   enableACME = true;
+      #   useACMEHost = domain;
       #   forceSSL = true;
       #   locations."/" = {
       #     proxyPass = "http://127.0.0.1:8989";
@@ -211,7 +213,7 @@ in {
       # };
       #
       # "radarr.${domain}" = {
-      #   enableACME = true;
+      #   useACMEHost = domain;
       #   forceSSL = true;
       #   locations."/" = {
       #     proxyPass = "http://127.0.0.1:7878";
@@ -225,7 +227,7 @@ in {
       # };
       #
       # "bazarr.${domain}" = {
-      #   enableACME = true;
+      #   useACMEHost = domain;
       #   forceSSL = true;
       #   locations."/" = {
       #     proxyPass = "http://127.0.0.1:6767";
