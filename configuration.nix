@@ -8,6 +8,7 @@
     ./modules/services/immich-public-proxy.nix
     ./modules/services/mealie.nix
     ./modules/services/nginx.nix
+    ./modules/services/backup.nix
     ./modules/system/security-hardening.nix
 
     ./modules/networking/tailscale.nix
