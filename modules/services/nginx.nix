@@ -6,7 +6,7 @@ in {
     acceptTerms = true;
     defaults.email = "alois.vincent@imt-atlantique.net";
     certs."${domain}" = {
-      extraDomainNames = [ "*.${domain}" ];
+      extraDomainNames = ["*.${domain}"];
       dnsProvider = "ovh";
       dnsPropagationCheck = true;
       environmentFile = "/var/lib/acme/ovh.env";
