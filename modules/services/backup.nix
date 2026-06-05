@@ -5,6 +5,7 @@
 
   services.restic.backups = {
     vps-data = {
+      initialize = true;
       # Les chemins à sauvegarder (uniquement l'état)
       paths = [
         "/var/lib"
