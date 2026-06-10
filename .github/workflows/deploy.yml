@@ -12,170 +12,167 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    
+
     # Only deploy if CI checks passed (implicit, but good to know)
     # environment: production # Optional: for manual approval rules
 
     steps:
-    - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-    # 1. Install Nix (for nixos-rebuild)
-    - uses: cachix/install-nix-action@v31
-      with:
-        nix_path: nixpkgs=channel:nixos-unstable
+      # 1. Install Nix (for nixos-rebuild)
+      - uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
 
-    # 2. Install Terraform
-    - uses: hashicorp/setup-terraform@v4
-      with:
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      # 2. Install Terraform
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-    # 3. Setup SSH (for NixOS deployment)
-    - name: Setup SSH
-      uses: webfactory/ssh-agent@v0.10.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    
-    - name: Add Host Key to Known Hosts
-      # Adding the server as a known host to prevent interactive prompt
-      # We use ssh-keyscan on the IP output from Terraform
-      # Note: This has a small "TOFU" (Trust On First Use) security implication in CI
-      run: |
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
-    
-    # 4. Apply Infrastructure (Terraform)
-    - name: Terraform Init
-      run: terraform init
-      working-directory: ./terraform
+      # 3. Setup SSH (for NixOS deployment)
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Set SSH Public Key Variable
-      # We read the public key from the repo and export it for Terraform to use
-      run: |
-        echo "TF_VAR_ssh_public_key=$(cat secrets/github-actions-deploy.pub)" >> $GITHUB_ENV
+      - name: Add Host Key to Known Hosts
+        # Adding the server as a known host to prevent interactive prompt
+        # We use ssh-keyscan on the IP output from Terraform
+        # Note: This has a small "TOFU" (Trust On First Use) security implication in CI
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
 
-    - name: Terraform Apply
-      run: terraform apply -auto-approve
-      working-directory: ./terraform
-      env:
-        TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
+      # 4. Apply Infrastructure (Terraform)
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform
 
-    # 5. Deploy NixOS
-    - name: Deploy NixOS
-      run: |
-        # Get IP from Terraform output
-        cd terraform
-        SERVER_IP=$(terraform output -raw ipv4_address)
-        cd ..
-        
-        echo "Deploying to $SERVER_IP..."
-        
-        # Scan host key now that we have IP
-        ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+      - name: Set SSH Public Key Variable
+        # We read the public key from the repo and export it for Terraform to use
+        run: |
+          echo "TF_VAR_ssh_public_key=$(cat secrets/github-actions-deploy.pub)" >> $GITHUB_ENV
 
-        # Test SSH connectivity first
-        ssh -o BatchMode=yes deploy@$SERVER_IP echo "SSH connection successful"
-        
-        # Set NIX_SSHOPTS to ensure nix-copy-closure uses the agent
-        export NIX_SSHOPTS="-o IdentityAgent=$SSH_AUTH_SOCK"
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ./terraform
+        env:
+          TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
 
-        # Run rebuild
-        nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --use-remote-sudo --target-host deploy@$SERVER_IP
+      # 5. Deploy NixOS
+      - name: Deploy NixOS
+        run: |
+          # Get IP from Terraform output
+          cd terraform
+          SERVER_IP=$(terraform output -raw ipv4_address)
+          cd ..
 
-    - name: Post-Deploy Smoke Test
-      if: success()
-      run: |
-        cd terraform
-        SERVER_IP=$(terraform output -raw ipv4_address)
-        cd ..
+          echo "Deploying to $SERVER_IP..."
 
-        echo "Running post-deploy smoke tests..."
+          # Scan host key now that we have IP
+          ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
 
-        # 1. Tailscale service is active
-        ssh deploy@$SERVER_IP "systemctl is-active tailscaled" \
-          && echo "✅ Tailscale service is running" \
-          || { echo "❌ CRITICAL: Tailscale service not active!"; exit 1; }
+          # Test SSH connectivity first
+          ssh -o BatchMode=yes deploy@$SERVER_IP echo "SSH connection successful"
 
-        # 4.5 Sustained Traffic & Conntrack Check
-        echo "Running sustained traffic check..."
-        BASELINE_DROPS=$(ssh deploy@$SERVER_IP "awk '{s+=\$10} END {print s}' /proc/net/stat/nf_conntrack || echo 0")
-        
-        # We can't easily run arbitrary VPN client traffic from the GitHub runner without setting up WireGuard
-        # locally on the runner. But we CAN send UDP traffic internally on the server 
-        # to ensure the conntrack engine processes it correctly.
-        # Let's generate 5s of rapid DNS queries over UDP to localhost to exercise conntrack.
-        ssh deploy@$SERVER_IP "for i in {1..50}; do dig @127.0.0.1 crapadouille.fr +short > /dev/null; sleep 0.1; done"
-        
-        NEW_DROPS=$(ssh deploy@$SERVER_IP "awk '{s+=\$10} END {print s}' /proc/net/stat/nf_conntrack || echo 0")
-        
-        # Bash hex to dec conversion
-        BASELINE_DEC=$((16#''${BASELINE_DROPS:-0}))
-        NEW_DEC=$((16#''${NEW_DROPS:-0}))
-        DROPS_DIFF=$((NEW_DEC - BASELINE_DEC))
-        
-        echo "Conntrack drop counter change: $DROPS_DIFF"
-        if [ "$DROPS_DIFF" -gt 10 ]; then
-          echo "❌ CRITICAL: Conntrack drops spiked by $DROPS_DIFF during smoke test. Possible kernel/firewall misconfiguration!"
-          exit 1
-        fi
-        echo "✅ Conntrack stable during smoke test"
+          # Run rebuild
+          TMPDIR=/tmp nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --use-remote-sudo --target-host deploy@$SERVER_IP
+
+      - name: Post-Deploy Smoke Test
+        if: success()
+        run: |
+          cd terraform
+          SERVER_IP=$(terraform output -raw ipv4_address)
+          cd ..
+
+          echo "Running post-deploy smoke tests..."
+
+          # 1. Tailscale service is active
+          ssh deploy@$SERVER_IP "systemctl is-active tailscaled" \
+            && echo "✅ Tailscale service is running" \
+            || { echo "❌ CRITICAL: Tailscale service not active!"; exit 1; }
+
+          # 4.5 Sustained Traffic & Conntrack Check
+          echo "Running sustained traffic check..."
+          BASELINE_DROPS=$(ssh deploy@$SERVER_IP "awk '{s+=\$10} END {print s}' /proc/net/stat/nf_conntrack || echo 0")
+
+          # We can't easily run arbitrary VPN client traffic from the GitHub runner without setting up WireGuard
+          # locally on the runner. But we CAN send UDP traffic internally on the server
+          # to ensure the conntrack engine processes it correctly.
+          # Let's generate 5s of rapid DNS queries over UDP to localhost to exercise conntrack.
+          ssh deploy@$SERVER_IP "for i in {1..50}; do dig @127.0.0.1 crapadouille.fr +short > /dev/null; sleep 0.1; done"
+
+          NEW_DROPS=$(ssh deploy@$SERVER_IP "awk '{s+=\$10} END {print s}' /proc/net/stat/nf_conntrack || echo 0")
+
+          # Bash hex to dec conversion
+          BASELINE_DEC=$((16#''${BASELINE_DROPS:-0}))
+          NEW_DEC=$((16#''${NEW_DROPS:-0}))
+          DROPS_DIFF=$((NEW_DEC - BASELINE_DEC))
+
+          echo "Conntrack drop counter change: $DROPS_DIFF"
+          if [ "$DROPS_DIFF" -gt 10 ]; then
+            echo "❌ CRITICAL: Conntrack drops spiked by $DROPS_DIFF during smoke test. Possible kernel/firewall misconfiguration!"
+            exit 1
+          fi
+          echo "✅ Conntrack stable during smoke test"
 
 
-        # 6. AdGuard upstream DNS resolution works
-        DNS_RESULT=$(ssh deploy@$SERVER_IP "dig @127.0.0.1 google.com +short 2>&1")
-        if echo "$DNS_RESULT" | head -1 | grep -q '\.'; then
-          echo "✅ Upstream DNS resolution works"
-        else
-          echo "⚠️  Upstream DNS resolution returned: '$DNS_RESULT'"
-        fi
+          # 6. AdGuard upstream DNS resolution works
+          DNS_RESULT=$(ssh deploy@$SERVER_IP "dig @127.0.0.1 google.com +short 2>&1")
+          if echo "$DNS_RESULT" | head -1 | grep -q '\.'; then
+            echo "✅ Upstream DNS resolution works"
+          else
+            echo "⚠️  Upstream DNS resolution returned: '$DNS_RESULT'"
+          fi
 
-        echo "All smoke tests passed!"
+          echo "All smoke tests passed!"
 
-    - name: Post-Deploy Service Health Check
-      if: success()
-      run: |
-        cd terraform
-        SERVER_IP=$(terraform output -raw ipv4_address)
-        cd ..
+      - name: Post-Deploy Service Health Check
+        if: success()
+        run: |
+          cd terraform
+          SERVER_IP=$(terraform output -raw ipv4_address)
+          cd ..
 
-        echo "Running service health checks..."
+          echo "Running service health checks..."
 
-        # Nginx is responding (the catch-all vhost is HTTP-only)
-        CODE=$(curl -s -o /dev/null -w '%{http_code}' http://$SERVER_IP/)
-        [ "$CODE" = "200" ] \
-          && echo "✅ Nginx HTTP responding" \
-          || { echo "❌ Nginx not responding on HTTP (got $CODE)"; exit 1; }
+          # Nginx is responding (the catch-all vhost is HTTP-only)
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' http://$SERVER_IP/)
+          [ "$CODE" = "200" ] \
+            && echo "✅ Nginx HTTP responding" \
+            || { echo "❌ Nginx not responding on HTTP (got $CODE)"; exit 1; }
 
-        # Immich public proxy is reachable
-        CODE=$(curl -sk -o /dev/null -w '%{http_code}' \
-          -H 'Host: photos.crapadouille.fr' https://$SERVER_IP/)
-        echo "$CODE" | grep -qE '200|302' \
-          && echo "✅ Immich public proxy responding" \
-          || { echo "❌ Immich public proxy not responding (got $CODE)"; exit 1; }
-
-        # VPN-restricted services return 403 from outside
-        for host in adguard mealie home grafana; do
+          # Immich public proxy is reachable
           CODE=$(curl -sk -o /dev/null -w '%{http_code}' \
-            -H "Host: $host.crapadouille.fr" https://$SERVER_IP/)
-          [ "$CODE" = "403" ] \
-            && echo "✅ $host.crapadouille.fr correctly restricted (403)" \
-            || { echo "❌ $host.crapadouille.fr returned $CODE (expected 403)"; exit 1; }
-        done
+            -H 'Host: photos.crapadouille.fr' https://$SERVER_IP/)
+          echo "$CODE" | grep -qE '200|302' \
+            && echo "✅ Immich public proxy responding" \
+            || { echo "❌ Immich public proxy not responding (got $CODE)"; exit 1; }
 
-        echo "All service health checks passed!"
+          # VPN-restricted services return 403 from outside
+          for host in adguard mealie home grafana; do
+            CODE=$(curl -sk -o /dev/null -w '%{http_code}' \
+              -H "Host: $host.crapadouille.fr" https://$SERVER_IP/)
+            [ "$CODE" = "403" ] \
+              && echo "✅ $host.crapadouille.fr correctly restricted (403)" \
+              || { echo "❌ $host.crapadouille.fr returned $CODE (expected 403)"; exit 1; }
+          done
 
-    - name: Check and Auto-Reboot
-      if: success()
-      run: |
-        cd terraform
-        SERVER_IP=$(terraform output -raw ipv4_address)
-        cd ..
-        
-        echo "Checking if reboot is required..."
-        # We run check-reboot. If it exits with 1, a reboot is needed.
-        if ! ssh deploy@$SERVER_IP "check-reboot"; then
-          echo "Reboot required detected! Initiating automatic reboot..."
-          ssh -o BatchMode=yes deploy@$SERVER_IP "sudo reboot" || true
-          echo "Reboot command sent successfully."
-        else
-          echo "No reboot needed."
-        fi
+          echo "All service health checks passed!"
+
+      - name: Check and Auto-Reboot
+        if: success()
+        run: |
+          cd terraform
+          SERVER_IP=$(terraform output -raw ipv4_address)
+          cd ..
+
+          echo "Checking if reboot is required..."
+          # We run check-reboot. If it exits with 1, a reboot is needed.
+          if ! ssh deploy@$SERVER_IP "check-reboot"; then
+            echo "Reboot required detected! Initiating automatic reboot..."
+            ssh -o BatchMode=yes deploy@$SERVER_IP "sudo reboot" || true
+            echo "Reboot command sent successfully."
+          else
+            echo "No reboot needed."
+          fi
