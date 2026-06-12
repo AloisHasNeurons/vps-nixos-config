@@ -82,11 +82,11 @@ jobs:
           # Test SSH connectivity first
           ssh -o BatchMode=yes deploy@$SERVER_IP echo "SSH connection successful"
 
-          # Tar the repository files (excluding git and terraform state/cache)
-          tar --exclude='.git' --exclude='terraform/.terraform' -czf repo.tar.gz .
+          # Tar the repository files (excluding git and terraform state/cache) to a temp folder
+          tar --exclude='.git' --exclude='terraform/.terraform' -czf /tmp/repo.tar.gz .
 
           # Copy tarball to the server
-          scp -o BatchMode=yes repo.tar.gz deploy@$SERVER_IP:/tmp/repo.tar.gz
+          scp -o BatchMode=yes /tmp/repo.tar.gz deploy@$SERVER_IP:/tmp/repo.tar.gz
 
           # Extract and rebuild on the server
           ssh -o BatchMode=yes deploy@$SERVER_IP "
