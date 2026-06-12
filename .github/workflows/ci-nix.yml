@@ -1,0 +1,68 @@
+name: "CI - Nix"
+
+on:
+  pull_request:
+    paths:
+      - "**/*.nix"
+      - "flake.lock"
+      - "justfile"
+      - "tests/**"
+      - "modules/**"
+      - "secrets/**"
+      - ".github/workflows/ci-nix.yml"
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - "**/*.nix"
+      - "flake.lock"
+      - "justfile"
+      - "tests/**"
+      - "modules/**"
+      - "secrets/**"
+      - ".github/workflows/ci-nix.yml"
+
+jobs:
+  nix-check:
+    name: Nix Flake Check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Install Nix
+      uses: determinate-systems/nix-installer-action@v16
+    - name: Magic Nix Cache
+      uses: determinate-systems/magic-nix-cache-action@v8
+    - name: Run flake check
+      run: nix flake check
+
+  nix-lint-eval:
+    name: Nix Lint & Eval
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Install Nix
+      uses: determinate-systems/nix-installer-action@v16
+    - name: Magic Nix Cache
+      uses: determinate-systems/magic-nix-cache-action@v8
+    - name: Check Format
+      run: nix fmt -- . --check
+    - name: Run deadnix
+      run: nix run nixpkgs#deadnix -- --fail .
+    - name: Evaluate system toplevel (dry-run)
+      run: nix build .#nixosConfigurations.vps.config.system.build.toplevel --dry-run
+
+  lock-diff:
+    name: Flake Lock Diff
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+    - name: Show flake.lock changes
+      run: |
+        echo "### flake.lock diff" >> $GITHUB_STEP_SUMMARY
+        echo '```diff' >> $GITHUB_STEP_SUMMARY
+        git diff origin/${{ github.base_ref }} -- flake.lock >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
