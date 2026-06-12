@@ -11,9 +11,6 @@ on:
       - "secrets/**"
       - ".github/workflows/ci-nix.yml"
   push:
-    branches:
-      - master
-      - main
     paths:
       - "**/*.nix"
       - "flake.lock"
@@ -26,6 +23,7 @@ on:
 jobs:
   nix-check:
     name: Nix Flake Check
+    if: github.ref_name == 'master' || github.ref_name == 'main' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
