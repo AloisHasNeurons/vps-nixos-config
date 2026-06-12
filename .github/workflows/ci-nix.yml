@@ -30,9 +30,9 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: Install Nix
-      uses: determinate-systems/nix-installer-action@v16
+      uses: DeterminateSystems/nix-installer-action@v16
     - name: Magic Nix Cache
-      uses: determinate-systems/magic-nix-cache-action@v8
+      uses: DeterminateSystems/magic-nix-cache-action@v8
     - name: Run flake check
       run: nix flake check
 
@@ -42,9 +42,9 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: Install Nix
-      uses: determinate-systems/nix-installer-action@v16
+      uses: DeterminateSystems/nix-installer-action@v16
     - name: Magic Nix Cache
-      uses: determinate-systems/magic-nix-cache-action@v8
+      uses: DeterminateSystems/magic-nix-cache-action@v8
     - name: Check Format
       run: nix fmt -- . --check
     - name: Run deadnix

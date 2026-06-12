@@ -21,10 +21,10 @@ jobs:
 
       # 1. Install Nix (for nixos-rebuild)
       - name: Install Nix
-        uses: determinate-systems/nix-installer-action@v16
+        uses: DeterminateSystems/nix-installer-action@v16
 
       - name: Magic Nix Cache
-        uses: determinate-systems/magic-nix-cache-action@v8
+        uses: DeterminateSystems/magic-nix-cache-action@v8
 
       # 2. Configure & Cache Terraform Plugins
       - name: Configure Terraform Plugin Cache
