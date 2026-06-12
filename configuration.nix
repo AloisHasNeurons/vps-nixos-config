@@ -46,7 +46,7 @@
   # Utility to check if reboot is needed
   environment.systemPackages = [
     pkgs.dnsutils # for dig (used by post-deploy DNS smoke tests)
-    pkgs.git      # for local repo clone and checkout during CD
+    pkgs.git # for local repo clone and checkout during CD
     (pkgs.writeScriptBin "check-reboot" ''
       #!${pkgs.runtimeShell}
       current_kernel=$(readlink -f /run/current-system/kernel)
