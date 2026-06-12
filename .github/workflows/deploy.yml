@@ -19,16 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # 1. Install Nix (for nixos-rebuild)
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v16
-
-      - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v8
-        with:
-          use-flakehub: false
-
-      # 2. Configure & Cache Terraform Plugins
+      # 1. Configure & Cache Terraform Plugins
       - name: Configure Terraform Plugin Cache
         run: |
           mkdir -p ~/.terraform.d/plugin-cache
@@ -40,12 +31,12 @@ jobs:
           path: ~/.terraform.d/plugin-cache
           key: ${{ runner.os }}-terraform-${{ hashFiles('terraform/.terraform.lock.hcl') }}
 
-      # 3. Install Terraform
+      # 2. Install Terraform
       - uses: hashicorp/setup-terraform@v4
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-      # 4. Setup SSH (for NixOS deployment)
+      # 3. Setup SSH (for NixOS deployment)
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.10.0
         with:
@@ -59,7 +50,7 @@ jobs:
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
 
-      # 5. Apply Infrastructure (Terraform)
+      # 4. Apply Infrastructure (Terraform)
       - name: Terraform Init
         run: terraform init
         working-directory: ./terraform
@@ -75,7 +66,7 @@ jobs:
         env:
           TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
 
-      # 6. Deploy NixOS
+      # 5. Deploy NixOS
       - name: Deploy NixOS
         run: |
           # Get IP from Terraform output
@@ -91,8 +82,16 @@ jobs:
           # Test SSH connectivity first
           ssh -o BatchMode=yes deploy@$SERVER_IP echo "SSH connection successful"
 
-          # Run rebuild
-          TMPDIR=/tmp nix run nixpkgs#nixos-rebuild -- switch --flake .#vps --use-remote-sudo --target-host deploy@$SERVER_IP --build-host deploy@$SERVER_IP
+          # Clone/update the public repository directly on the server and rebuild
+          ssh -o BatchMode=yes deploy@$SERVER_IP "
+            if [ ! -d ~/vps-nixos-config ]; then
+              git clone https://github.com/\${{ github.repository }}.git ~/vps-nixos-config
+            fi
+            cd ~/vps-nixos-config
+            git fetch origin
+            git checkout \${{ github.sha }}
+            sudo nixos-rebuild switch --flake .#vps
+          "
 
       - name: Post-Deploy Smoke Test
         if: success()
