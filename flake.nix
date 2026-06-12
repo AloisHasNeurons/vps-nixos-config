@@ -60,6 +60,7 @@
             pkgs = import nixpkgs {
               inherit system;
               overlays = [
+                inputs.nix-minecraft.overlay
                 pythonPyhumpsOverlay
                 mealieOverlay
               ];
@@ -68,6 +69,11 @@
           }
       );
   in {
+    overlays = {
+      pyhumps = pythonPyhumpsOverlay;
+      mealie = mealieOverlay;
+    };
+
     nixosConfigurations = {
       # --- VPS ---
       vps = nixpkgs.lib.nixosSystem {
