@@ -33,6 +33,8 @@ jobs:
       uses: DeterminateSystems/nix-installer-action@v16
     - name: Magic Nix Cache
       uses: DeterminateSystems/magic-nix-cache-action@v8
+      with:
+        use-flakehub: false
     - name: Run flake check
       run: nix flake check
 
@@ -45,6 +47,8 @@ jobs:
       uses: DeterminateSystems/nix-installer-action@v16
     - name: Magic Nix Cache
       uses: DeterminateSystems/magic-nix-cache-action@v8
+      with:
+        use-flakehub: false
     - name: Check Format
       run: nix fmt -- . --check
     - name: Run deadnix
