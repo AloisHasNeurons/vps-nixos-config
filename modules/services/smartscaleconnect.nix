@@ -43,7 +43,7 @@ in {
         cp -f ${config.age.secrets.scaleconnect-yaml.path} /var/lib/smartscaleconnect/scaleconnect.yaml
         chmod 600 /var/lib/smartscaleconnect/scaleconnect.yaml
       '';
-      ExecStart = "${smartscaleconnect-pkg}/bin/smartscaleconnect -c /var/lib/smartscaleconnect/scaleconnect.yaml -r 4h";
+      ExecStart = "${smartscaleconnect-pkg}/bin/SmartScaleConnect -c /var/lib/smartscaleconnect/scaleconnect.yaml -r 4h";
       Restart = "always";
       RestartSec = "10s";
       WorkingDirectory = "/var/lib/smartscaleconnect";
