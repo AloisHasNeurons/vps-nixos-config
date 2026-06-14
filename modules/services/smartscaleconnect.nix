@@ -1,4 +1,8 @@
-{config, pkgs, ...}: let
+{
+  config,
+  pkgs,
+  ...
+}: let
   # Native compilation of SmartScaleConnect Go program from source
   smartscaleconnect-pkg = pkgs.buildGoModule rec {
     pname = "smartscaleconnect";
