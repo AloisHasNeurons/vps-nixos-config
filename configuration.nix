@@ -9,6 +9,7 @@
     ./modules/services/mealie.nix
     ./modules/services/nginx.nix
     ./modules/services/backup.nix
+    ./modules/services/smartscaleconnect.nix
     ./modules/system/security-hardening.nix
 
     ./modules/networking/tailscale.nix
