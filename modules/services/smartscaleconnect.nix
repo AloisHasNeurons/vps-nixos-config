@@ -11,7 +11,7 @@
 
   # Run SmartScaleConnect container
   virtualisation.oci-containers.containers.smartscaleconnect = {
-    image = "ghcr.io/alexxit/smartscaleconnect:latest";
+    image = "ghcr.io/alexxit/smartscaleconnect/amd64:latest";
     autoStart = true;
     volumes = [
       "/var/lib/smartscaleconnect:/app"
