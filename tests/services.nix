@@ -101,7 +101,7 @@ in
           80: "Nginx HTTP",
           443: "Nginx HTTPS",
           3000: "AdGuard Home",
-          8080: "Tandoor",
+          8085: "Tandoor",
           9090: "Prometheus",
           9100: "Node Exporter",
       }
