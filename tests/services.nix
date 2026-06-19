@@ -40,6 +40,12 @@ in
           pkgs.lib.mkForce (pkgs.writeText "dummy-immich" "DB_PASSWORD=dummy");
         age.secrets.homepage-env.file =
           pkgs.lib.mkForce (pkgs.writeText "dummy-homepage" "HOMEPAGE_VAR=dummy");
+        age.secrets.scaleconnect-yaml.file =
+          pkgs.lib.mkForce (pkgs.writeText "dummy-scaleconnect" "{}");
+        age.secrets.restic-env.file =
+          pkgs.lib.mkForce (pkgs.writeText "dummy-restic-env" "B2_ACCOUNT_ID=dummy\nB2_ACCOUNT_KEY=dummy");
+        age.secrets.restic-password.file =
+          pkgs.lib.mkForce (pkgs.writeText "dummy-restic-password" "dummy");
 
         # --- VM test overrides ---
         networking.hostName = pkgs.lib.mkForce "server";
