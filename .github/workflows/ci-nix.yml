@@ -34,7 +34,7 @@ jobs:
       with:
         use-flakehub: false
     - name: Run flake check
-      run: nix flake check
+      run: nix flake check --max-jobs 1
 
   nix-lint-eval:
     name: Nix Lint & Eval
