@@ -97,8 +97,6 @@
   };
   age.secrets.tandoor-secret-key = {
     file = ./secrets/tandoor-secret-key.age;
-    owner = "tandoor-recipes";
-    group = "tandoor-recipes";
   };
   # age.secrets.seedbox-ssh.file = ./secrets/seedbox-ssh.age;
 
