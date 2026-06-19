@@ -42,6 +42,10 @@ in
           pkgs.lib.mkForce (pkgs.writeText "dummy-homepage" "HOMEPAGE_VAR=dummy");
         age.secrets.tandoor-secret-key.file =
           pkgs.lib.mkForce (pkgs.writeText "dummy-tandoor" "0123456789abcdef0123456789abcdef");
+
+        systemd.tmpfiles.rules = [
+          "f /run/agenix/tandoor-secret-key 0400 root root - 0123456789abcdef0123456789abcdef"
+        ];
         age.secrets.scaleconnect-yaml.file =
           pkgs.lib.mkForce (pkgs.writeText "dummy-scaleconnect" "{}");
         age.secrets.restic-env.file =
@@ -82,8 +86,13 @@ in
       ]
 
       for unit in critical_units:
-          server.wait_for_unit(unit, timeout=60)
-          print(f"✅ Test 1: {unit} is active")
+          try:
+              server.wait_for_unit(unit, timeout=60)
+              print(f"✅ Test 1: {unit} is active")
+          except Exception as e:
+              print(f"❌ Failed to start unit: {unit}")
+              print(server.succeed(f"journalctl -u {unit} --no-pager"))
+              raise e
 
       # ══════════════════════════════════════════════
       # Test 2: Services are listening on expected ports

@@ -28,10 +28,12 @@ in
         # --- VM Specific Overrides (to make it bootable in test) ---
 
         # Dummy Grafana secret key (since we can't decrypt real secrets)
+        age.secrets.grafana-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-grafana-key" "0123456789abcdef0123456789abcdef");
         age.secrets.tandoor-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-tandoor" "0123456789abcdef0123456789abcdef");
-        # Dummy secrets (can't decrypt real ones in test VM)
-        age.secrets.grafana-secret-key.file =
-          pkgs.lib.mkForce (pkgs.writeText "dummy-grafana-key" "0123456789abcdef0123456789abcdef");
+
+        systemd.tmpfiles.rules = [
+          "f /run/agenix/tandoor-secret-key 0400 root root - 0123456789abcdef0123456789abcdef"
+        ];
         age.secrets.immich-env.file =
           pkgs.lib.mkForce (pkgs.writeText "dummy-immich" "DB_PASSWORD=dummy");
         age.secrets.homepage-env.file =
