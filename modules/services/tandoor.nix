@@ -6,6 +6,7 @@
     database.createLocally = true;
     extraConfig = {
       SECRET_KEY_FILE = "/run/credentials/tandoor-recipes.service/tandoor-secret-key";
+      ALLOWED_HOSTS = "tandoor.crapadouille.fr,localhost,127.0.0.1";
     };
   };
 
