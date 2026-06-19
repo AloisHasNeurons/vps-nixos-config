@@ -168,7 +168,7 @@ jobs:
             || { echo "❌ Immich public proxy not responding (got $CODE)"; exit 1; }
 
           # VPN-restricted services return 403 from outside
-          for host in adguard mealie home grafana; do
+          for host in adguard tandoor home grafana; do
             CODE=$(curl -sk -o /dev/null -w '%{http_code}' \
               -H "Host: $host.crapadouille.fr" https://$SERVER_IP/)
             [ "$CODE" = "403" ] \

@@ -32,25 +32,6 @@
   } @ inputs: let
     inherit (self) outputs;
     systems = ["x86_64-linux"];
-    pythonPyhumpsOverlay = _: prev: {
-      pythonPackagesExtensions =
-        prev.pythonPackagesExtensions
-        ++ [
-          (_: python-prev: {
-            pyhumps = python-prev.pyhumps.overridePythonAttrs (_: {
-              # Bypass upstream patch that fails to apply
-              patches = [];
-              doCheck = false;
-            });
-          })
-        ];
-    };
-
-    mealieOverlay = _: prev: {
-      mealie = prev.mealie.overrideAttrs (_: {
-        doCheck = false;
-      });
-    };
 
     forEachSystem = f:
       nixpkgs.lib.genAttrs systems (
@@ -61,18 +42,13 @@
               inherit system;
               overlays = [
                 inputs.nix-minecraft.overlay
-                pythonPyhumpsOverlay
-                mealieOverlay
               ];
               config.allowUnfree = true;
             };
           }
       );
   in {
-    overlays = {
-      pyhumps = pythonPyhumpsOverlay;
-      mealie = mealieOverlay;
-    };
+    overlays = {};
 
     nixosConfigurations = {
       # --- VPS ---
@@ -95,8 +71,6 @@
           {
             nixpkgs.overlays = [
               inputs.nix-minecraft.overlay
-              pythonPyhumpsOverlay
-              mealieOverlay
             ];
             nixpkgs.config.allowUnfree = true;
           }

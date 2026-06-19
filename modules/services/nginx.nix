@@ -64,11 +64,11 @@ in {
         };
       };
 
-      "mealie.${domain}" = {
+      "tandoor.${domain}" = {
         useACMEHost = domain;
         forceSSL = true;
         locations."/" = {
-          proxyPass = "http://127.0.0.1:9000";
+          proxyPass = "http://127.0.0.1:8080";
           proxyWebsockets = true;
           # Restrict to VPN
           extraConfig = ''

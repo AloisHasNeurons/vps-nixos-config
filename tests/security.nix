@@ -29,6 +29,7 @@ in
 
         # Dummy Grafana secret key (since we can't decrypt real secrets)
         age.secrets.grafana-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-grafana-key" "0123456789abcdef0123456789abcdef");
+        age.secrets.tandoor-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-tandoor" "0123456789abcdef0123456789abcdef");
 
         # Force hostname to be 'server' so the python script variable matches
         networking.hostName = pkgs.lib.mkForce "server";
@@ -96,7 +97,7 @@ in
       print("Success: Public firewall is clean. No unexpected ports exposed.")
 
       # 5. Verify ALL VPN-restricted admin panels return 403 from outside
-      vpn_restricted_vhosts = ["adguard", "mealie", "home", "grafana"]
+      vpn_restricted_vhosts = ["adguard", "tandoor", "home", "grafana"]
 
       for vhost in vpn_restricted_vhosts:
           http_code = scanner.succeed(

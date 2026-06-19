@@ -121,7 +121,7 @@ This stack is designed to be a comprehensive, self-hosted ecosystem.
 *   **Media & Storage:** Immich (Self-hosted Photos/Videos)
 *   **DNS Filtering:** AdGuard Home
 *   **Dashboard:** Homepage (Unified Service Status)
-*   **Recipe manager:** Mealie
+*   **Recipe manager:** Tandoor
 ---
 
 ## Usage & Deployment

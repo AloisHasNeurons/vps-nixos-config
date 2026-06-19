@@ -40,6 +40,8 @@ in
           pkgs.lib.mkForce (pkgs.writeText "dummy-immich" "DB_PASSWORD=dummy");
         age.secrets.homepage-env.file =
           pkgs.lib.mkForce (pkgs.writeText "dummy-homepage" "HOMEPAGE_VAR=dummy");
+        age.secrets.tandoor-secret-key.file =
+          pkgs.lib.mkForce (pkgs.writeText "dummy-tandoor" "0123456789abcdef0123456789abcdef");
 
         # --- VM test overrides ---
         networking.hostName = pkgs.lib.mkForce "server";
@@ -68,7 +70,7 @@ in
           "adguardhome.service",
           "prometheus.service",
           "prometheus-node-exporter.service",
-          "mealie.service",
+          "tandoor-recipes.service",
           "fail2ban.service",
           "sshd.service",
       ]
@@ -84,7 +86,7 @@ in
           80: "Nginx HTTP",
           443: "Nginx HTTPS",
           3000: "AdGuard Home",
-          9000: "Mealie",
+          8080: "Tandoor",
           9090: "Prometheus",
           9100: "Node Exporter",
       }
@@ -103,7 +105,7 @@ in
 
       # Verify Nginx proxies to services that are actually running
       # (excludes Grafana/Homepage whose backends aren't up in the test VM)
-      for vhost in ["adguard", "mealie"]:
+      for vhost in ["adguard", "tandoor"]:
           http_code = server.succeed(
               f"curl -sk -o /dev/null -w '%{{http_code}}' "
               f"-H 'Host: {vhost}.crapadouille.fr' https://localhost/"
