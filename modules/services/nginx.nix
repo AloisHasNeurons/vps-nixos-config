@@ -68,7 +68,7 @@ in {
         useACMEHost = domain;
         forceSSL = true;
         locations."/" = {
-          proxyPass = "http://127.0.0.1:8080";
+          proxyPass = "http://127.0.0.1:8085";
           proxyWebsockets = true;
           # Restrict to VPN
           extraConfig = ''
