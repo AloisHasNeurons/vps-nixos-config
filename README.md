@@ -12,7 +12,7 @@
     <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
   </a>
   <a href="https://github.com/AloisHasNeurons/vps-nixos-config/actions">
-    <img src="https://github.com/AloisHasNeurons/vps-nixos-config/actions/workflows/ci.yml/badge.svg" alt="CI Status">
+    <img src="https://github.com/AloisHasNeurons/vps-nixos-config/actions/workflows/ci-nix.yml/badge.svg" alt="CI Status">
   </a>
   <a href="https://github.com/AloisHasNeurons/vps-nixos-config/actions">
     <img src="https://github.com/AloisHasNeurons/vps-nixos-config/actions/workflows/deploy.yml/badge.svg" alt="CD Status">
