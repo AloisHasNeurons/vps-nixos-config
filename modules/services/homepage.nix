@@ -233,11 +233,11 @@
       {
         Food = [
           {
-            Mealie = {
-              icon = "mealie";
-              href = "https://mealie.crapadouille.fr";
+            Tandoor = {
+              icon = "tandoor";
+              href = "https://tandoor.crapadouille.fr";
               description = "Recipe Manager";
-              ping = "http://127.0.0.1:9000";
+              ping = "http://127.0.0.1:8080";
             };
           }
         ];

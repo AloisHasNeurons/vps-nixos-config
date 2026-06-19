@@ -6,7 +6,7 @@
     ./modules/services/homepage.nix
     ./modules/services/immich.nix
     ./modules/services/immich-public-proxy.nix
-    ./modules/services/mealie.nix
+    ./modules/services/tandoor.nix
     ./modules/services/nginx.nix
     ./modules/services/backup.nix
     ./modules/services/smartscaleconnect.nix
@@ -94,6 +94,11 @@
     file = ./secrets/grafana-secret-key.age;
     owner = "grafana";
     group = "grafana";
+  };
+  age.secrets.tandoor-secret-key = {
+    file = ./secrets/tandoor-secret-key.age;
+    owner = "tandoor-recipes";
+    group = "tandoor-recipes";
   };
   # age.secrets.seedbox-ssh.file = ./secrets/seedbox-ssh.age;
 

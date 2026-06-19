@@ -25,6 +25,10 @@ in
           inputs.disko.nixosModules.disko
         ];
 
+        # --- VM Specific Overrides (to make it bootable in test) ---
+
+        # Dummy Grafana secret key (since we can't decrypt real secrets)
+        age.secrets.tandoor-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-tandoor" "0123456789abcdef0123456789abcdef");
         # Dummy secrets (can't decrypt real ones in test VM)
         age.secrets.grafana-secret-key.file =
           pkgs.lib.mkForce (pkgs.writeText "dummy-grafana-key" "0123456789abcdef0123456789abcdef");
@@ -105,7 +109,7 @@ in
       print("Success: Public firewall is clean. No unexpected ports exposed.")
 
       # 5. Verify ALL VPN-restricted admin panels return 403 from outside
-      vpn_restricted_vhosts = ["adguard", "mealie", "home", "grafana"]
+      vpn_restricted_vhosts = ["adguard", "tandoor", "home", "grafana"]
 
       for vhost in vpn_restricted_vhosts:
           http_code = scanner.succeed(
