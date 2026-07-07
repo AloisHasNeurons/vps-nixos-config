@@ -33,6 +33,23 @@ jobs:
 
     - uses: hashicorp/setup-terraform@v4
 
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+
+    - name: Build Go binaries for serverless monitoring
+      run: |
+        # Build AWS Lambda binary
+        cd terraform/src/aws_health_check
+        GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o bootstrap main.go
+        cd ../../..
+
+        # Build Azure Custom Handler binary
+        cd terraform/src/azure_health_check
+        GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o azure_handler main.go
+        cd ../../..
+
     - name: Check Terraform Formatting
       run: terraform fmt -check -recursive
 
@@ -41,3 +58,4 @@ jobs:
         cd terraform
         terraform init -backend=false
         terraform validate
+
