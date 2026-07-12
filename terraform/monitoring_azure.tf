@@ -5,6 +5,26 @@ import {
   id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring"
 }
 
+import {
+  to = azurerm_storage_account.monitoring
+  id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring/providers/Microsoft.Storage/storageAccounts/aloisvpsmonstore"
+}
+
+import {
+  to = azurerm_service_plan.monitoring
+  id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring/providers/Microsoft.Web/serverFarms/asp-vps-monitoring"
+}
+
+import {
+  to = azurerm_storage_container.deployments
+  id = "https://aloisvpsmonstore.blob.core.windows.net/function-releases"
+}
+
+import {
+  to = azurerm_linux_function_app.health_check
+  id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring/providers/Microsoft.Web/sites/alois-vps-monitoring-fn"
+}
+
 resource "azurerm_resource_group" "monitoring" {
   name     = "rg-vps-monitoring"
   location = "francecentral"
