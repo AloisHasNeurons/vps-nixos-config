@@ -1,4 +1,4 @@
-# Azure Serverless Monitoring Resources
+# Azure Serverless Monitoring & Alarm Resources
 
 resource "azurerm_resource_group" "monitoring" {
   name     = "rg-vps-monitoring"
@@ -96,10 +96,45 @@ resource "azurerm_linux_function_app" "health_check" {
     FUNCTIONS_WORKER_RUNTIME = "custom"
   }
 
-  # Prevent Terraform from thinking package changes occur unless MD5 changes
   lifecycle {
     ignore_changes = [
       app_settings["WEBSITE_RUN_FROM_PACKAGE"]
     ]
+  }
+}
+
+# Azure Monitor Action Group pointing to the Function's /api/alertHandler endpoint
+resource "azurerm_monitor_action_group" "alerts" {
+  name                = "vps-monitoring-action-group"
+  resource_group_name = azurerm_resource_group.monitoring.name
+  short_name          = "vps-alerts"
+
+  webhook_receiver {
+    name                    = "telegram-webhook-bridge"
+    service_uri             = "https://${azurerm_linux_function_app.health_check.default_hostname}/api/alertHandler"
+    use_common_alert_schema = true
+  }
+}
+
+# Azure Metric Alert for HTTP 5xx errors (checking fails)
+resource "azurerm_monitor_metric_alert" "vps_health_check_alert" {
+  name                = "vps-health-check-alert"
+  resource_group_name = azurerm_resource_group.monitoring.name
+  scopes              = [azurerm_linux_function_app.health_check.id]
+  description         = "Triggers when the VPS health check fails (returns HTTP 5xx)"
+  severity            = 3
+  frequency           = "PT1M" # Check every 1 minute
+  window_size         = "PT1M" # 1-minute window
+
+  criteria {
+    metric_namespace = "Microsoft.Web/sites"
+    metric_name      = "Http5xx"
+    operator         = "GreaterThan"
+    aggregation      = "Total"
+    threshold        = 0
+  }
+
+  action {
+    action_group_id = azurerm_monitor_action_group.alerts.id
   }
 }

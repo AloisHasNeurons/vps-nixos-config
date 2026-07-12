@@ -9,7 +9,7 @@ import (
 func TestHandler(t *testing.T) {
 	// 1. Test passing check (HTTP 200)
 	os.Setenv("TARGET_URL", "https://httpbin.org/status/200")
-	
+
 	resp, err := handler(context.Background())
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
@@ -21,10 +21,10 @@ func TestHandler(t *testing.T) {
 
 	// 2. Test failing check (HTTP 500)
 	os.Setenv("TARGET_URL", "https://httpbin.org/status/500")
-	
+
 	resp, err = handler(context.Background())
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
+	if err == nil {
+		t.Fatalf("Expected error, got nil")
 	}
 
 	expectedMsg := "Health check failed with status code: 500"

@@ -30,5 +30,7 @@ TODO.md
 # Go serverless binaries and deployment packages
 terraform/src/aws_health_check/bootstrap
 terraform/src/aws_health_check/bootstrap.zip
+terraform/src/telegram_notifier/bootstrap
+terraform/src/telegram_notifier/bootstrap.zip
 terraform/src/azure_health_check/azure_handler
 terraform/src/azure_health_check.zip
