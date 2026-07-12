@@ -26,3 +26,9 @@ terraform.tfstate.backup
 secrets/github-actions-deploy
 
 TODO.md
+
+# Go serverless binaries and deployment packages
+terraform/src/aws_health_check/bootstrap
+terraform/src/aws_health_check/bootstrap.zip
+terraform/src/azure_health_check/azure_handler
+terraform/src/azure_health_check.zip
