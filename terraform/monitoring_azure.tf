@@ -1,5 +1,10 @@
 # Azure Serverless Monitoring & Alarm Resources
 
+import {
+  to = azurerm_resource_group.monitoring
+  id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring"
+}
+
 resource "azurerm_resource_group" "monitoring" {
   name     = "rg-vps-monitoring"
   location = "francecentral"

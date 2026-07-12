@@ -47,7 +47,7 @@ resource "aws_lambda_function" "health_check" {
 
 # 2. EventBridge Scheduler (every 1 minute)
 resource "aws_cloudwatch_event_rule" "every_one_minute" {
-  name                = "vps-health-check-schedule"
+  name                = "vps-health-check-schedule-1min"
   description         = "Trigger VPS health check every 1 minute"
   schedule_expression = "rate(1 minute)"
 }
