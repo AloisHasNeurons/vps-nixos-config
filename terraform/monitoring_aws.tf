@@ -39,7 +39,7 @@ resource "aws_lambda_function" "health_check" {
 
   environment {
     variables = {
-      TARGET_URL       = var.target_url
+      TARGET_URL       = var.target_url == "USE_VPS_PUBLIC_IP" ? "http://${hcloud_server.vps.ipv4_address}/" : var.target_url
       TELEGRAM_TOKEN   = var.telegram_token
       TELEGRAM_CHAT_ID = var.telegram_chat_id
     }

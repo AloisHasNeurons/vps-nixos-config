@@ -2,7 +2,7 @@
 
 resource "azurerm_resource_group" "monitoring" {
   name     = "rg-vps-monitoring"
-  location = "westeurope"
+  location = "francecentral"
 }
 
 resource "azurerm_storage_account" "monitoring" {
@@ -90,7 +90,7 @@ resource "azurerm_linux_function_app" "health_check" {
 
   app_settings = {
     WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.health_check.url}${data.azurerm_storage_account_sas.sas.sas}"
-    TARGET_URL               = var.target_url
+    TARGET_URL               = var.target_url == "USE_VPS_PUBLIC_IP" ? "http://${hcloud_server.vps.ipv4_address}/" : var.target_url
     TELEGRAM_TOKEN           = var.telegram_token
     TELEGRAM_CHAT_ID         = var.telegram_chat_id
     FUNCTIONS_WORKER_RUNTIME = "custom"

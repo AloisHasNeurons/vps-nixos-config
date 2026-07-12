@@ -34,9 +34,9 @@ variable "aws_region" {
 }
 
 variable "target_url" {
-  description = "URL to monitor"
+  description = "URL to monitor. Set to 'USE_VPS_PUBLIC_IP' to dynamically target the Hetzner VPS public IP."
   type        = string
-  default     = "https://crapadouille.fr"
+  default     = "USE_VPS_PUBLIC_IP"
 }
 
 variable "telegram_token" {
