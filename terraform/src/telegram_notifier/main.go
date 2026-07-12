@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -34,10 +35,15 @@ func handler(ctx context.Context, snsEvent events.SNSEvent) error {
 			continue
 		}
 
+		reason := alarm.NewStateReason
+		if strings.Contains(reason, "Threshold Crossed:") {
+			reason = "The health check failed (host unresponsive, connection refused, or returned non-200 HTTP status)"
+		}
+
 		var text string
 		if alarm.NewStateValue == "ALARM" {
 			text = fmt.Sprintf("🔴 <b>[AWS Monitor Alert]</b> Host is <b>DOWN</b>!\n\n<b>Target:</b> %s\n<b>Reason:</b> %s\n<b>Time:</b> %s",
-				targetURL, alarm.NewStateReason, time.Now().Format("2006-01-02 15:04:05 MST"))
+				targetURL, reason, time.Now().Format("2006-01-02 15:04:05 MST"))
 		} else if alarm.NewStateValue == "OK" {
 			text = fmt.Sprintf("🟢 <b>[AWS Monitor Alert]</b> Host has <b>RECOVERED</b>!\n\n<b>Target:</b> %s\n<b>Time:</b> %s",
 				targetURL, time.Now().Format("2006-01-02 15:04:05 MST"))

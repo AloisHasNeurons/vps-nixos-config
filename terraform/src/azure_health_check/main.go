@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -16,16 +17,8 @@ type InvokeResponse struct {
 	ReturnValue interface{}            `json:"ReturnValue"`
 }
 
-// Azure Common Alert Schema structure
-type AzureCommonAlert struct {
-	SchemaId string `json:"schemaId"`
-	Data     struct {
-		Essentials struct {
-			AlertRule        string `json:"alertRule"`
-			MonitorCondition string `json:"monitorCondition"` // "Fired" or "Resolved"
-			Description      string `json:"description"`
-		} `json:"essentials"`
-	} `json:"data"`
+type State struct {
+	LastState string `json:"last_state"` // "UP" or "DOWN"
 }
 
 func main() {
@@ -35,7 +28,6 @@ func main() {
 	}
 
 	http.HandleFunc("/healthCheckTimer", healthCheckTimerHandler)
-	http.HandleFunc("/alertHandler", alertHandler)
 
 	fmt.Printf("Starting Custom Handler on port %s...\n", port)
 	err := http.ListenAndServe(":"+port, nil)
@@ -45,7 +37,7 @@ func main() {
 }
 
 // 1. healthCheckTimerHandler is triggered by Azure Timer every 1 minute
-// It pings the server and returns 500 on failure, incrementing the Http5xx metric
+// It pings the server, uses Azure Blob Storage to maintain state, and alerts on state transition
 func healthCheckTimerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -62,55 +54,115 @@ func healthCheckTimerHandler(w http.ResponseWriter, r *http.Request) {
 		Timeout: 10 * time.Second,
 	}
 
+	// 1. Perform ping
+	isUp := true
+	reason := ""
 	resp, err := client.Get(targetURL)
 	if err != nil {
-		fmt.Printf("Health check failed for %s: %v\n", targetURL, err)
-		writeResponse(w, http.StatusInternalServerError, fmt.Sprintf("Health check failed: %v", err))
-		return
+		isUp = false
+		reason = fmt.Sprintf("Network connection failed: %v", err)
+	} else {
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			isUp = false
+			reason = fmt.Sprintf("Received non-200 HTTP status: %d", resp.StatusCode)
+		}
+	}
+
+	currentState := "UP"
+	if !isUp {
+		currentState = "DOWN"
+	}
+
+	// 2. Fetch last state from storage blob using SAS token
+	sasToken := os.Getenv("AZURE_STORAGE_SAS")
+	storageAccount := os.Getenv("AZURE_STORAGE_ACCOUNT")
+	stateURL := os.Getenv("AZURE_STORAGE_STATE_URL")
+
+	if stateURL == "" && sasToken != "" && storageAccount != "" {
+		stateURL = fmt.Sprintf("https://%s.blob.core.windows.net/function-releases/state.json%s", storageAccount, sasToken)
+	}
+
+	prevState := "UP"
+	if stateURL != "" {
+		prevState = getPreviousState(r.Context(), &client, stateURL)
+	}
+
+	// 3. Compare states and send alert on transition
+	if currentState != prevState {
+		telegramToken := os.Getenv("TELEGRAM_TOKEN")
+		telegramChatID := os.Getenv("TELEGRAM_CHAT_ID")
+
+		var message string
+		if currentState == "DOWN" {
+			message = fmt.Sprintf("🔴 <b>[Azure Monitor Alert]</b> Host is <b>DOWN</b>!\n\n<b>Target:</b> %s\n<b>Reason:</b> %s\n<b>Time:</b> %s",
+				targetURL, reason, time.Now().Format("2006-01-02 15:04:05 MST"))
+		} else {
+			message = fmt.Sprintf("🟢 <b>[Azure Monitor Alert]</b> Host has <b>RECOVERED</b>!\n\n<b>Target:</b> %s\n<b>Time:</b> %s",
+				targetURL, time.Now().Format("2006-01-02 15:04:05 MST"))
+		}
+
+		sendTelegramAlert(telegramToken, telegramChatID, message)
+
+		// Save new state
+		if stateURL != "" {
+			saveState(r.Context(), &client, stateURL, currentState)
+		}
+	}
+
+	if isUp {
+		writeResponse(w, http.StatusOK, "Health check passed")
+	} else {
+		// Return 200 OK so Azure Functions host doesn't log internal platform failures
+		// Since we handle stateful alerts inside Go, the Functions host can run successfully
+		writeResponse(w, http.StatusOK, fmt.Sprintf("Health check failed: %s", reason))
+	}
+}
+
+func getPreviousState(ctx context.Context, client *http.Client, stateURL string) string {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, stateURL, nil)
+	if err != nil {
+		return "UP"
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "UP"
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("Health check returned non-200 code: %d for %s\n", resp.StatusCode, targetURL)
-		writeResponse(w, http.StatusInternalServerError, fmt.Sprintf("Health check failed with status code: %d", resp.StatusCode))
-		return
+	if resp.StatusCode == http.StatusNotFound {
+		return "UP" // First run, no state file yet
 	}
 
-	writeResponse(w, http.StatusOK, "Health check passed")
+	if resp.StatusCode != http.StatusOK {
+		return "UP"
+	}
+
+	var s State
+	if err := json.NewDecoder(resp.Body).Decode(&s); err != nil {
+		return "UP"
+	}
+	return s.LastState
 }
 
-// 2. alertHandler is triggered by Azure Action Group Webhook when the Alert Fires or Resolves
-func alertHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	var alert AzureCommonAlert
-	err := json.NewDecoder(r.Body).Decode(&alert)
+func saveState(ctx context.Context, client *http.Client, stateURL string, lastState string) {
+	s := State{LastState: lastState}
+	data, err := json.Marshal(s)
 	if err != nil {
-		fmt.Printf("Failed to decode Azure Alert payload: %v\n", err)
-		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	telegramToken := os.Getenv("TELEGRAM_TOKEN")
-	telegramChatID := os.Getenv("TELEGRAM_CHAT_ID")
-	targetURL := os.Getenv("TARGET_URL")
-
-	var text string
-	if alert.Data.Essentials.MonitorCondition == "Fired" {
-		text = fmt.Sprintf("🔴 <b>[Azure Monitor Alert]</b> Host is <b>DOWN</b>!\n\n<b>Target:</b> %s\n<b>Reason:</b> %s\n<b>Time:</b> %s",
-			targetURL, alert.Data.Essentials.Description, time.Now().Format("2006-01-02 15:04:05 MST"))
-	} else if alert.Data.Essentials.MonitorCondition == "Resolved" {
-		text = fmt.Sprintf("🟢 <b>[Azure Monitor Alert]</b> Host has <b>RECOVERED</b>!\n\n<b>Target:</b> %s\n<b>Time:</b> %s",
-			targetURL, time.Now().Format("2006-01-02 15:04:05 MST"))
-	} else {
-		text = fmt.Sprintf("ℹ️ [Azure Monitor] Alert state changed to %s for %s", alert.Data.Essentials.MonitorCondition, alert.Data.Essentials.AlertRule)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, stateURL, bytes.NewReader(data))
+	if err != nil {
+		return
 	}
+	req.Header.Set("x-ms-blob-type", "BlockBlob")
+	req.Header.Set("Content-Type", "application/json")
 
-	sendTelegramAlert(telegramToken, telegramChatID, text)
-	w.WriteHeader(http.StatusOK)
+	resp, err := client.Do(req)
+	if err == nil {
+		resp.Body.Close()
+	}
 }
 
 func writeResponse(w http.ResponseWriter, status int, msg string) {

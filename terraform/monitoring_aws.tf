@@ -29,6 +29,25 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_role_policy" "lambda_ssm" {
+  name = "vps-monitoring-lambda-ssm-policy"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:PutParameter"
+        ]
+        Resource = "arn:aws:ssm:*:*:parameter/vps/health-check/*"
+      }
+    ]
+  })
+}
+
 resource "aws_lambda_function" "health_check" {
   filename         = data.archive_file.aws_health_check_zip.output_path
   source_code_hash = data.archive_file.aws_health_check_zip.output_base64sha256
@@ -40,7 +59,9 @@ resource "aws_lambda_function" "health_check" {
 
   environment {
     variables = {
-      TARGET_URL = var.target_url == "USE_VPS_PUBLIC_IP" ? "http://${hcloud_server.vps.ipv4_address}/" : var.target_url
+      TARGET_URL       = var.target_url == "USE_VPS_PUBLIC_IP" ? "http://${hcloud_server.vps.ipv4_address}/" : var.target_url
+      TELEGRAM_TOKEN   = var.telegram_token
+      TELEGRAM_CHAT_ID = var.telegram_chat_id
     }
   }
 }
@@ -64,69 +85,4 @@ resource "aws_lambda_permission" "allow_cloudwatch" {
   function_name = aws_lambda_function.health_check.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.every_one_minute.arn
-}
-
-# 3. Telegram Notifier function (triggered by SNS alerts)
-data "archive_file" "aws_telegram_notifier_zip" {
-  type        = "zip"
-  source_file = "${path.module}/src/telegram_notifier/bootstrap"
-  output_path = "${path.module}/src/telegram_notifier/bootstrap.zip"
-}
-
-resource "aws_lambda_function" "telegram_notifier" {
-  filename         = data.archive_file.aws_telegram_notifier_zip.output_path
-  source_code_hash = data.archive_file.aws_telegram_notifier_zip.output_base64sha256
-  function_name    = "vps-telegram-notifier"
-  role             = aws_iam_role.lambda_role.arn
-  handler          = "bootstrap"
-  runtime          = "provided.al2023"
-  timeout          = 15
-
-  environment {
-    variables = {
-      TARGET_URL       = var.target_url == "USE_VPS_PUBLIC_IP" ? "http://${hcloud_server.vps.ipv4_address}/" : var.target_url
-      TELEGRAM_TOKEN   = var.telegram_token
-      TELEGRAM_CHAT_ID = var.telegram_chat_id
-    }
-  }
-}
-
-# 4. SNS Topic for Alarm Transitions
-resource "aws_sns_topic" "alerts" {
-  name = "vps-health-check-alerts-topic"
-}
-
-resource "aws_sns_topic_subscription" "notifier_subscription" {
-  topic_arn = aws_sns_topic.alerts.arn
-  protocol  = "lambda"
-  endpoint  = aws_lambda_function.telegram_notifier.arn
-}
-
-resource "aws_lambda_permission" "allow_sns" {
-  statement_id  = "AllowExecutionFromSNS"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.telegram_notifier.function_name
-  principal     = "sns.amazonaws.com"
-  source_arn    = aws_sns_topic.alerts.arn
-}
-
-# 5. CloudWatch Metric Alarm
-resource "aws_cloudwatch_metric_alarm" "vps_health_check_alarm" {
-  alarm_name          = "vps-health-check-alarm"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Errors"
-  namespace           = "AWS/Lambda"
-  period              = 60 # 1 minute
-  statistic           = "Sum"
-  threshold           = 1
-  alarm_description   = "Triggers when the VPS health check fails"
-  treat_missing_data  = "breaching"
-
-  dimensions = {
-    FunctionName = aws_lambda_function.health_check.function_name
-  }
-
-  alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,14 +9,36 @@ import (
 )
 
 func TestHealthCheckTimerHandler(t *testing.T) {
-	// 1. Test passing check (HTTP 200)
+	// Setup general mock environment variables
+	os.Setenv("TELEGRAM_TOKEN", "")
+	os.Setenv("TELEGRAM_CHAT_ID", "")
 	os.Setenv("TARGET_URL", "https://httpbin.org/status/200")
 
+	// 1. Set up mock Azure Blob Storage Server to maintain simulated state
+	mockState := "UP"
+	storageServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(State{LastState: mockState})
+			return
+		}
+		if r.Method == http.MethodPut {
+			var s State
+			json.NewDecoder(r.Body).Decode(&s)
+			mockState = s.LastState
+			w.WriteHeader(http.StatusCreated)
+			return
+		}
+	}))
+	defer storageServer.Close()
+
+	os.Setenv("AZURE_STORAGE_STATE_URL", storageServer.URL)
+
+	// 2. Test transition from UP to UP (should pass, state remains UP, no alerts sent)
 	req, err := http.NewRequest(http.MethodPost, "/healthCheckTimer", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(healthCheckTimerHandler)
 	handler.ServeHTTP(rr, req)
@@ -25,92 +46,45 @@ func TestHealthCheckTimerHandler(t *testing.T) {
 	if rr.Code != http.StatusOK {
 		t.Errorf("Expected status code 200, got %d", rr.Code)
 	}
-
-	var response InvokeResponse
-	err = json.Unmarshal(rr.Body.Bytes(), &response)
-	if err != nil {
-		t.Fatalf("Failed to decode response: %v", err)
+	if mockState != "UP" {
+		t.Errorf("Expected mockState UP, got %s", mockState)
 	}
 
-	if response.ReturnValue != "Health check passed" {
-		t.Errorf("Expected 'Health check passed', got '%v'", response.ReturnValue)
-	}
-
-	// 2. Test failing check (HTTP 500)
+	// 3. Test transition from UP to DOWN (status 500 failing check)
 	os.Setenv("TARGET_URL", "https://httpbin.org/status/500")
-
-	req, err = http.NewRequest(http.MethodPost, "/healthCheckTimer", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr = httptest.NewRecorder()
-	handler.ServeHTTP(rr, req)
-
-	if rr.Code != http.StatusInternalServerError {
-		t.Errorf("Expected status code 500, got %d", rr.Code)
-	}
-
-	var errorResponse InvokeResponse
-	json.Unmarshal(rr.Body.Bytes(), &errorResponse)
-
-	expectedMsg := "Health check failed with status code: 500"
-	if errorResponse.ReturnValue != expectedMsg {
-		t.Errorf("Expected '%s', got '%v'", expectedMsg, errorResponse.ReturnValue)
-	}
-}
-
-func TestAlertHandler(t *testing.T) {
-	os.Setenv("TELEGRAM_TOKEN", "")
-	os.Setenv("TELEGRAM_CHAT_ID", "")
-	os.Setenv("TARGET_URL", "https://crapadouille.fr")
-
-	// Mock Fired alert payload
-	firedPayload := `{
-		"schemaId": "azureMonitorCommonAlertSchema",
-		"data": {
-			"essentials": {
-				"alertRule": "vps-health-check-alert",
-				"monitorCondition": "Fired",
-				"description": "VPS is down"
-			}
-		}
-	}`
-
-	req, err := http.NewRequest(http.MethodPost, "/alertHandler", bytes.NewBufferString(firedPayload))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(alertHandler)
-	handler.ServeHTTP(rr, req)
-
-	if rr.Code != http.StatusOK {
-		t.Errorf("Expected status code 200, got %d", rr.Code)
-	}
-
-	// Mock Resolved alert payload
-	resolvedPayload := `{
-		"schemaId": "azureMonitorCommonAlertSchema",
-		"data": {
-			"essentials": {
-				"alertRule": "vps-health-check-alert",
-				"monitorCondition": "Resolved",
-				"description": "VPS is up"
-			}
-		}
-	}`
-
-	req, err = http.NewRequest(http.MethodPost, "/alertHandler", bytes.NewBufferString(resolvedPayload))
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	req, _ = http.NewRequest(http.MethodPost, "/healthCheckTimer", nil)
 	rr = httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("Expected status code 200, got %d", rr.Code)
+	}
+	if mockState != "DOWN" {
+		t.Errorf("Expected state to transition to DOWN, got %s", mockState)
+	}
+
+	// 4. Test transition from DOWN to DOWN (should remain DOWN without state mutation)
+	req, _ = http.NewRequest(http.MethodPost, "/healthCheckTimer", nil)
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected status code 200, got %d", rr.Code)
+	}
+	if mockState != "DOWN" {
+		t.Errorf("Expected state to remain DOWN, got %s", mockState)
+	}
+
+	// 5. Test transition from DOWN to UP (recovered status 200)
+	os.Setenv("TARGET_URL", "https://httpbin.org/status/200")
+	req, _ = http.NewRequest(http.MethodPost, "/healthCheckTimer", nil)
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected status code 200, got %d", rr.Code)
+	}
+	if mockState != "UP" {
+		t.Errorf("Expected state to transition to UP, got %s", mockState)
 	}
 }

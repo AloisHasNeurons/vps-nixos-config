@@ -45,11 +45,6 @@ jobs:
         GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o bootstrap main.go
         cd ../../..
 
-        # Build AWS Telegram Notifier binary
-        cd terraform/src/telegram_notifier
-        GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o bootstrap main.go
-        cd ../../..
-
         # Build Azure Custom Handler binary
         cd terraform/src/azure_health_check
         GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o azure_handler main.go
