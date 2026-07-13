@@ -122,26 +122,32 @@ func healthCheckTimerHandler(w http.ResponseWriter, r *http.Request) {
 func getPreviousState(ctx context.Context, client *http.Client, stateURL string) string {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, stateURL, nil)
 	if err != nil {
+		fmt.Printf("[Azure State] Failed to create GET request: %v\n", err)
 		return "UP"
 	}
 	resp, err := client.Do(req)
 	if err != nil {
+		fmt.Printf("[Azure State] GET request failed: %v\n", err)
 		return "UP"
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
+		fmt.Printf("[Azure State] State file not found (404), defaulting to UP\n")
 		return "UP" // First run, no state file yet
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("[Azure State] GET returned non-200: %d\n", resp.StatusCode)
 		return "UP"
 	}
 
 	var s State
 	if err := json.NewDecoder(resp.Body).Decode(&s); err != nil {
+		fmt.Printf("[Azure State] Failed to decode JSON: %v\n", err)
 		return "UP"
 	}
+	fmt.Printf("[Azure State] Successfully loaded prevState: %s\n", s.LastState)
 	return s.LastState
 }
 
@@ -149,19 +155,29 @@ func saveState(ctx context.Context, client *http.Client, stateURL string, lastSt
 	s := State{LastState: lastState}
 	data, err := json.Marshal(s)
 	if err != nil {
+		fmt.Printf("[Azure State] Failed to marshal state: %v\n", err)
 		return
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPut, stateURL, bytes.NewReader(data))
 	if err != nil {
+		fmt.Printf("[Azure State] Failed to create PUT request: %v\n", err)
 		return
 	}
 	req.Header.Set("x-ms-blob-type", "BlockBlob")
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
-	if err == nil {
-		resp.Body.Close()
+	if err != nil {
+		fmt.Printf("[Azure State] PUT request failed: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		fmt.Printf("[Azure State] PUT returned non-2xx status: %d\n", resp.StatusCode)
+	} else {
+		fmt.Printf("[Azure State] Successfully saved state %s\n", lastState)
 	}
 }
 

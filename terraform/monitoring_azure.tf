@@ -87,12 +87,12 @@ data "azurerm_storage_account_sas" "sas" {
 
   permissions {
     read    = true
-    write   = false
+    write   = true
     delete  = false
     list    = false
-    add     = false
-    create  = false
-    update  = false
+    add     = true
+    create  = true
+    update  = true
     process = false
     tag     = false
     filter  = false
