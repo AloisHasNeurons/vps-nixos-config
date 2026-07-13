@@ -122,10 +122,4 @@ resource "azurerm_linux_function_app" "health_check" {
     AZURE_STORAGE_SAS        = data.azurerm_storage_account_sas.sas.sas
     AZURE_STORAGE_ACCOUNT    = azurerm_storage_account.monitoring.name
   }
-
-  lifecycle {
-    ignore_changes = [
-      app_settings["WEBSITE_RUN_FROM_PACKAGE"]
-    ]
-  }
 }
