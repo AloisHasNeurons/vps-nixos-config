@@ -9,12 +9,10 @@
     ./modules/services/tandoor.nix
     ./modules/services/nginx.nix
     ./modules/services/backup.nix
-    ./modules/services/smartscaleconnect.nix
     ./modules/system/security-hardening.nix
 
     ./modules/networking/tailscale.nix
 
-    ./modules/services/gotify.nix
     ./modules/monitoring/alerts.nix
 
     # Media Suite
@@ -97,6 +95,9 @@
   };
   age.secrets.tandoor-secret-key = {
     file = ./secrets/tandoor-secret-key.age;
+  };
+  age.secrets.telegram-alerts = {
+    file = ./secrets/telegram-alerts.age;
   };
   # age.secrets.seedbox-ssh.file = ./secrets/seedbox-ssh.age;
 

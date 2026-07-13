@@ -25,13 +25,15 @@
   <br />
   <a href="#-the-challenge"><strong>The Challenge</strong></a>
   ·
-  <a href="#-the-solution-method"><strong>The Solution</strong></a>
+  <a href="#-the-solution"><strong>The Solution</strong></a>
+  ·
+  <a href="#-uptime-monitoring"><strong>Uptime Monitoring</strong></a>
   ·
   <a href="#-observability--monitoring"><strong>Observability</strong></a>
   ·
   <a href="#-gitops--automation"><strong>GitOps</strong></a>
   ·
-  <a href="#-security--ci"><strong>Security</strong></a>
+  <a href="#-security--continuous-verification"><strong>Security</strong></a>
 </p>
 
 ---
@@ -59,6 +61,17 @@ Once the hardware exists, **NixOS** takes over. Unlike traditional distros, NixO
 
 ---
 
+## Multi-Cloud Serverless Uptime Monitoring
+
+To guarantee high availability and instant incident response, this configuration features a custom **Stateful Multi-Cloud Uptime Monitoring** architecture. Rather than running a monitoring agent on the VPS itself (which goes silent when the host crashes), we check the host externally using serverless platforms.
+
+*   **AWS Monitoring:** An AWS Lambda function is scheduled to run every **1 minute** via EventBridge. It tracks the previous state (`UP` or `DOWN`) in the **AWS SSM Parameter Store**.
+*   **Azure Monitoring:** An Azure Function App is scheduled to run every **1 minute** via a Timer Trigger. It tracks the previous state in an **Azure Storage Account blob**.
+*   **Telegram Webhook Bridge:** When either cloud detects a state transition (`UP ➔ DOWN` or `DOWN ➔ UP`), it pushes a detailed message directly to a Telegram bot.
+*   **Detailed Failure Analysis:** Unlike generic CloudWatch or Azure Metric alerts, the Go code pings the host and returns the **exact connection failure reason or HTTP status code** (e.g. `connect: connection refused` or `502 Bad Gateway`) directly inside the Telegram notification.
+
+---
+
 ## GitOps & Automated Maintenance vs Toil
 
 A key SRE principle is eliminating toil. I implemented a **GitOps workflow** to handle system updates automatically using **Renovate Bot**.
@@ -66,12 +79,12 @@ A key SRE principle is eliminating toil. I implemented a **GitOps workflow** to 
 **The Workflow:**
 1.  **Scan:** Renovate scans my `flake.nix` for outdated inputs (NixOS system updates) or dependencies.
 2.  **PR:** It opens a Pull Request automatically (e.g., *"Update NixOS to 25.05"*).
-3.  **Verify:** GitHub Actions CI runs the full test suite (including the [security scanner](#-security--ci)).
+3.  **Verify:** GitHub Actions CI runs the full test suite (including the [security scanner](#-security--continuous-verification)).
 4.  **Merge & Deploy:** Once merged, the CD pipeline automatically deploys the update.
 
 **The Safety Net:**
 *   **Atomic Updates:** If the build fails on the server, the switch is aborted. The system is never left in a broken state.
-*   **Rollbacks:** Every deployment creates a new boot generation. If a service behaves incorrectly, a single command (`nixos-rebuild switch --rollback`) instantaneous reverts the entire system state.
+*   **Rollbacks:** Every deployment creates a new boot generation. If a service behaves incorrectly, a single command (`nixos-rebuild switch --rollback`) instantaneously reverts the entire system state.
 
 ---
 
@@ -81,15 +94,14 @@ You can't manage what you can't measure. I integrated a full monitoring stack to
 
 *   **Prometheus:** Scrapes metrics from system services (`node_exporter`) and applications.
 *   **Grafana:** Visualizes these metrics in a unified dashboard.
-*   **Homepage:** A central entry point aggregating status from all services (Docker APIs, system stats, weather, markets) into a single "Mission Control" UI.
-
-This setup allows me to spot resource bottlenecks (CPU/RAM spikes) or service outages immediately.
+*   **Homepage:** A central entry point aggregating status from all services into a unified UI.
+*   **System Alerts:** Any systemd unit failure triggers an automatic Telegram webhook alert containing the last 5 log lines of the crashed service.
 
 ---
 
 ## Security & Continuous Verification
 
-Trust, but verify. A unique feature of this project is the **Forward-Compatible Security Scanner**.
+A unique feature of this project is the **Forward-Compatible Security Scanner**.
 
 Most security setups rely on manual periodic audits. I automated this by writing a custom **NixOS Integration Test** that runs inside the GitHub Actions CI pipeline.
 
@@ -99,7 +111,7 @@ Before any code is merged, the CI system:
 2.  **Simulates an Attack**: A secondary attacker machine runs an `nmap` scan against the VM.
 3.  **Audits Ports**: It acts as a whitelist. If *any* port is found open that isn't explicitly allowed (SSH/22, HTTP/80, HTTPS/443), the **pipeline fails**.
 
-> **Result:** It is impossible for me to accidentally expose an internal service (like the `Grafana`, or `Adguard` admin panel) to the public internet. The bad deploy is blocked before it ever leaves git.
+> **Result:** It is impossible for me to accidentally expose an internal service (like the `Grafana` or `Adguard` admin panel) to the public internet. The bad deploy is blocked before it ever leaves git.
 
 ---
 
@@ -109,24 +121,25 @@ This stack is designed to be a comprehensive, self-hosted ecosystem.
 
 ### Core Stack
 *   **OS & Deployment:** `NixOS` (Unstable) + `Nix Flakes`
-*   **Provisioning:** `Terraform` + `Terraform Cloud`
+*   **Provisioning:** `Terraform` + `HCP Terraform` (Terraform Cloud)
 *   **Secret Management:** `Agenix` (Age-encrypted secrets stored in Git)
 *   **CI/CD:** `GitHub Actions`
 *   **Maintenance:** `Renovate Bot`
 
 ### Hosted Services
-*   **Networking:** WireGuard VPN + NFTables (Masquerading)
+*   **Networking:** Tailscale Mesh VPN + NFTables (Masquerading)
 *   **Reverse Proxy:** Nginx (ACME/Let's Encrypt)
 *   **Observability:** Grafana + Prometheus
 *   **Media & Storage:** Immich (Self-hosted Photos/Videos)
 *   **DNS Filtering:** AdGuard Home
 *   **Dashboard:** Homepage (Unified Service Status)
 *   **Recipe manager:** Tandoor
+
 ---
 
 ## Usage & Deployment
 
-The entire lifecycle is managed via `just` recipes, simplifying complex commands into standard verbs. And the deployment to the server is automatic when pushed to GitHub.
+Deployments to the server are fully automated via GitHub Actions when pushing to `master`.
 
 ### Local Testing
 You can run the full test suite locally without touching the real server:
@@ -139,14 +152,13 @@ nix flake check
 nix run .#vps-vm
 ```
 
-### Deployment Commands
+### Manual Infrastructure Deployment (Terraform)
+If you need to provision or edit infrastructure manually:
 
 ```bash
-# 1. Provision infrastructure (Terraform)
-just provision
-
-# 2. Deploy updates (Configures NixOS, runs reboot checks)
-just deploy
+cd terraform
+nix develop ../#default --impure -c terraform init
+nix develop ../#default --impure -c terraform apply
 ```
 
 ---

@@ -1,9 +1,14 @@
-{pkgs, ...}: {
+{pkgs, config, ...}: {
   # Universal Systemd Failure Notification Service
   #
   # This service is triggered via `OnFailure=notify-failure@%n.service`
   # on any other systemd service. It uses `curl` to send a push notification
-  # to the local Gotify instance when a service crashes.
+  # to Telegram when a service crashes.
+  #
+  # Configuration:
+  # The service expects an agenix encrypted secret file `telegram-alerts.age` containing:
+  # TELEGRAM_TOKEN="your-bot-token"
+  # TELEGRAM_CHAT_ID="your-chat-id"
 
   systemd.services."notify-failure@" = {
     description = "Failure notification for %i";
@@ -12,48 +17,41 @@
     serviceConfig = {
       Type = "oneshot";
       User = "root";
+      EnvironmentFile = config.age.secrets.telegram-alerts.path;
     };
 
     # Needs curl and systemctl (to get service logs/status)
     path = with pkgs; [curl systemd];
 
     # The %i gets replaced with the name of the service that failed.
-    # We fetch the last 5 log lines of the crashed service to include in the push payload.
+    # We fetch the last 5 log lines of the crashed service to include in the Telegram message.
     script = ''
-            # Note: For production use, the token should ideally be loaded from Agenix,
-            # but since it's an internal-only call and the Nix store is readable by root,
-            # we can securely read it from a file or environment variable configured later.
-            # For now, we will use a placeholder or read from a local state file if it exists.
+      # Verify environment variables
+      if [ -z "$TELEGRAM_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+        echo "Telegram credentials not found in agenix secrets. Skipping notification."
+        exit 0
+      fi
 
-            TOKEN_FILE="/var/lib/gotify/app_token"
+      FAILED_SERVICE="%i"
 
-            if [ ! -f "$TOKEN_FILE" ]; then
-              echo "Gotify App Token not found at $TOKEN_FILE. Skipping notification."
-              exit 0
-            fi
+      # Grab the last few log lines of the failed service
+      LOGS=$(journalctl -u "$FAILED_SERVICE" -n 5 --no-pager || true)
 
-            TOKEN=$(cat "$TOKEN_FILE")
-            FAILED_SERVICE="%i"
+      # Build HTML message
+      MESSAGE="🚨 <b>[VPS Notification Alert]</b> Service <b>$FAILED_SERVICE</b> has failed or crashed!
 
-            # Grab the last few log lines of the failed service
-            LOGS=$(journalctl -u "$FAILED_SERVICE" -n 5 --no-pager || true)
+<b>Host:</b> $(hostname)
+<b>Time:</b> $(date)
 
-            # Prepare JSON payload
-            # Using jq to properly escape the logs for JSON
-            JSON_PAYLOAD=$(${pkgs.jq}/bin/jq -n \
-              --arg title "🚨 NixOS Service Failed: $FAILED_SERVICE" \
-              --arg message "The service $FAILED_SERVICE has failed or crashed.
+<b>Last Logs:</b>
+<pre>$LOGS</pre>"
 
-      Last Logs:
-      $LOGS" \
-              --arg priority 8 \
-              '{title: $title, message: $message, priority: ($priority | tonumber)}'
-            )
-
-            # Send the request
-            curl -X POST "http://127.0.0.1:8080/message?token=$TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "$JSON_PAYLOAD"
+      # Send HTML message via curl
+      curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+        -d "chat_id=$TELEGRAM_CHAT_ID" \
+        --data-urlencode "text=$MESSAGE" \
+        -d "parse_mode=HTML" \
+        --fail-with-body
     '';
   };
 }

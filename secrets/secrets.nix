@@ -14,5 +14,5 @@ in {
   "seedbox-ssh.age".publicKeys = users;
   "restic-env.age".publicKeys = users;
   "restic-password.age".publicKeys = users;
-  "scaleconnect-yaml.age".publicKeys = users;
+  "telegram-alerts.age".publicKeys = users;
 }
