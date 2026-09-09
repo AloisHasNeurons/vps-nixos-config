@@ -1,125 +1,125 @@
-# Azure Serverless Monitoring & Alarm Resources
+# # Azure Serverless Monitoring & Alarm Resources
 
-import {
-  to = azurerm_resource_group.monitoring
-  id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring"
-}
+# import {
+#   to = azurerm_resource_group.monitoring
+#   id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring"
+# }
 
-import {
-  to = azurerm_storage_account.monitoring
-  id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring/providers/Microsoft.Storage/storageAccounts/aloisvpsmonstore"
-}
+# import {
+#   to = azurerm_storage_account.monitoring
+#   id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring/providers/Microsoft.Storage/storageAccounts/aloisvpsmonstore"
+# }
 
-import {
-  to = azurerm_service_plan.monitoring
-  id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring/providers/Microsoft.Web/serverFarms/asp-vps-monitoring"
-}
+# import {
+#   to = azurerm_service_plan.monitoring
+#   id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring/providers/Microsoft.Web/serverFarms/asp-vps-monitoring"
+# }
 
-import {
-  to = azurerm_storage_container.deployments
-  id = "https://aloisvpsmonstore.blob.core.windows.net/function-releases"
-}
+# import {
+#   to = azurerm_storage_container.deployments
+#   id = "https://aloisvpsmonstore.blob.core.windows.net/function-releases"
+# }
 
-import {
-  to = azurerm_linux_function_app.health_check
-  id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring/providers/Microsoft.Web/sites/alois-vps-monitoring-fn"
-}
+# import {
+#   to = azurerm_linux_function_app.health_check
+#   id = "/subscriptions/b8cb387d-9b75-4d48-8812-e3817e5b8f78/resourceGroups/rg-vps-monitoring/providers/Microsoft.Web/sites/alois-vps-monitoring-fn"
+# }
 
-resource "azurerm_resource_group" "monitoring" {
-  name     = "rg-vps-monitoring"
-  location = "francecentral"
-}
+# resource "azurerm_resource_group" "monitoring" {
+#   name     = "rg-vps-monitoring"
+#   location = "francecentral"
+# }
 
-resource "azurerm_storage_account" "monitoring" {
-  name                     = "aloisvpsmonstore"
-  resource_group_name      = azurerm_resource_group.monitoring.name
-  location                 = azurerm_resource_group.monitoring.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-}
+# resource "azurerm_storage_account" "monitoring" {
+#   name                     = "aloisvpsmonstore"
+#   resource_group_name      = azurerm_resource_group.monitoring.name
+#   location                 = azurerm_resource_group.monitoring.location
+#   account_tier             = "Standard"
+#   account_replication_type = "LRS"
+# }
 
-resource "azurerm_service_plan" "monitoring" {
-  name                = "asp-vps-monitoring"
-  resource_group_name = azurerm_resource_group.monitoring.name
-  location            = azurerm_resource_group.monitoring.location
-  os_type             = "Linux"
-  sku_name            = "Y1" # Consumption Plan (Serverless)
-}
+# resource "azurerm_service_plan" "monitoring" {
+#   name                = "asp-vps-monitoring"
+#   resource_group_name = azurerm_resource_group.monitoring.name
+#   location            = azurerm_resource_group.monitoring.location
+#   os_type             = "Linux"
+#   sku_name            = "Y1" # Consumption Plan (Serverless)
+# }
 
-data "archive_file" "azure_health_check_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/src/azure_health_check"
-  output_path = "${path.module}/src/azure_health_check.zip"
-}
+# data "archive_file" "azure_health_check_zip" {
+#   type        = "zip"
+#   source_dir  = "${path.module}/src/azure_health_check"
+#   output_path = "${path.module}/src/azure_health_check.zip"
+# }
 
-resource "azurerm_storage_container" "deployments" {
-  name                  = "function-releases"
-  storage_account_name  = azurerm_storage_account.monitoring.name
-  container_access_type = "private"
-}
+# resource "azurerm_storage_container" "deployments" {
+#   name                  = "function-releases"
+#   storage_account_name  = azurerm_storage_account.monitoring.name
+#   container_access_type = "private"
+# }
 
-resource "azurerm_storage_blob" "health_check" {
-  name                   = "azure_health_check-${data.archive_file.azure_health_check_zip.output_md5}.zip"
-  storage_account_name   = azurerm_storage_account.monitoring.name
-  storage_container_name = azurerm_storage_container.deployments.name
-  type                   = "Block"
-  source                 = data.archive_file.azure_health_check_zip.output_path
-}
+# resource "azurerm_storage_blob" "health_check" {
+#   name                   = "azure_health_check-${data.archive_file.azure_health_check_zip.output_md5}.zip"
+#   storage_account_name   = azurerm_storage_account.monitoring.name
+#   storage_container_name = azurerm_storage_container.deployments.name
+#   type                   = "Block"
+#   source                 = data.archive_file.azure_health_check_zip.output_path
+# }
 
-data "azurerm_storage_account_sas" "sas" {
-  connection_string = azurerm_storage_account.monitoring.primary_connection_string
-  https_only        = true
-  start             = "2026-01-01"
-  expiry            = "2036-01-01"
+# data "azurerm_storage_account_sas" "sas" {
+#   connection_string = azurerm_storage_account.monitoring.primary_connection_string
+#   https_only        = true
+#   start             = "2026-01-01"
+#   expiry            = "2036-01-01"
 
-  resource_types {
-    service   = false
-    container = false
-    object    = true
-  }
+#   resource_types {
+#     service   = false
+#     container = false
+#     object    = true
+#   }
 
-  services {
-    blob  = true
-    queue = false
-    table = false
-    file  = false
-  }
+#   services {
+#     blob  = true
+#     queue = false
+#     table = false
+#     file  = false
+#   }
 
-  permissions {
-    read    = true
-    write   = true
-    delete  = false
-    list    = false
-    add     = true
-    create  = true
-    update  = true
-    process = false
-    tag     = false
-    filter  = false
-  }
-}
+#   permissions {
+#     read    = true
+#     write   = true
+#     delete  = false
+#     list    = false
+#     add     = true
+#     create  = true
+#     update  = true
+#     process = false
+#     tag     = false
+#     filter  = false
+#   }
+# }
 
-resource "azurerm_linux_function_app" "health_check" {
-  name                       = "alois-vps-monitoring-fn"
-  resource_group_name        = azurerm_resource_group.monitoring.name
-  location                   = azurerm_resource_group.monitoring.location
-  storage_account_name       = azurerm_storage_account.monitoring.name
-  storage_account_access_key = azurerm_storage_account.monitoring.primary_access_key
-  service_plan_id            = azurerm_service_plan.monitoring.id
+# resource "azurerm_linux_function_app" "health_check" {
+#   name                       = "alois-vps-monitoring-fn"
+#   resource_group_name        = azurerm_resource_group.monitoring.name
+#   location                   = azurerm_resource_group.monitoring.location
+#   storage_account_name       = azurerm_storage_account.monitoring.name
+#   storage_account_access_key = azurerm_storage_account.monitoring.primary_access_key
+#   service_plan_id            = azurerm_service_plan.monitoring.id
 
-  site_config {
-    application_stack {
-      use_custom_runtime = true
-    }
-  }
+#   site_config {
+#     application_stack {
+#       use_custom_runtime = true
+#     }
+#   }
 
-  app_settings = {
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.health_check.url}${data.azurerm_storage_account_sas.sas.sas}"
-    TARGET_URL               = var.target_url == "USE_VPS_PUBLIC_IP" ? "http://${hcloud_server.vps.ipv4_address}/" : var.target_url
-    TELEGRAM_TOKEN           = var.telegram_token
-    TELEGRAM_CHAT_ID         = var.telegram_chat_id
-    FUNCTIONS_WORKER_RUNTIME = "custom"
-    AZURE_STORAGE_SAS        = data.azurerm_storage_account_sas.sas.sas
-    AZURE_STORAGE_ACCOUNT    = azurerm_storage_account.monitoring.name
-  }
-}
+#   app_settings = {
+#     WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.health_check.url}${data.azurerm_storage_account_sas.sas.sas}"
+#     TARGET_URL               = var.target_url == "USE_VPS_PUBLIC_IP" ? "http://${hcloud_server.vps.ipv4_address}/" : var.target_url
+#     TELEGRAM_TOKEN           = var.telegram_token
+#     TELEGRAM_CHAT_ID         = var.telegram_chat_id
+#     FUNCTIONS_WORKER_RUNTIME = "custom"
+#     AZURE_STORAGE_SAS        = data.azurerm_storage_account_sas.sas.sas
+#     AZURE_STORAGE_ACCOUNT    = azurerm_storage_account.monitoring.name
+#   }
+# }

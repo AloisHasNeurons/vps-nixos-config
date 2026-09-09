@@ -1,3 +1,3 @@
-module azure_health_check
+// module azure_health_check
 
-go 1.22
+// go 1.22

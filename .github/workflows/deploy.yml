@@ -49,9 +49,9 @@ jobs:
           cd ../../..
 
           # Build Azure Custom Handler binary
-          cd terraform/src/azure_health_check
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o azure_handler main.go
-          cd ../../..
+          # cd terraform/src/azure_health_check
+          # GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o azure_handler main.go
+          # cd ../../..
 
       # 3. Setup SSH (for NixOS deployment)
       - name: Setup SSH
