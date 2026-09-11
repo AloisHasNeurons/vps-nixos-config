@@ -22,3 +22,24 @@ removed {
     destroy = false
   }
 }
+
+removed {
+  from = azurerm_linux_function_app.health_check
+  lifecycle {
+    destroy = false
+  }
+}
+
+removed {
+  from = azurerm_service_plan.monitoring
+  lifecycle {
+    destroy = false
+  }
+}
+
+removed {
+  from = azurerm_resource_group.monitoring
+  lifecycle {
+    destroy = false
+  }
+}
