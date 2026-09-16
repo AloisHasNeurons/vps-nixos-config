@@ -30,7 +30,7 @@ jobs:
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@v22
     - name: Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@v14
+      uses: DeterminateSystems/magic-nix-cache-action@v15
       with:
         use-flakehub: false
     - name: Run flake check
@@ -44,7 +44,7 @@ jobs:
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@v22
     - name: Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@v14
+      uses: DeterminateSystems/magic-nix-cache-action@v15
       with:
         use-flakehub: false
     - name: Check Format
