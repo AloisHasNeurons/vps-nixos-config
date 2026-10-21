@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/aws/aws-lambda-go v1.55.1
 	github.com/aws/aws-sdk-go-v2/config v1.33.9
-	github.com/aws/aws-sdk-go-v2/service/ssm v1.79.3
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.80.0
 )
 
 require (
