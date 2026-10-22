@@ -3,12 +3,33 @@
   age.secrets.restic-env.file = ../../secrets/restic-env.age;
   age.secrets.restic-password.file = ../../secrets/restic-password.age;
 
+  # Dumps cohérents de Postgres (Immich + Tandoor) avant le backup restic.
+  # Copier /var/lib/postgresql à chaud ne garantit pas une restauration utilisable.
+  services.postgresqlBackup = {
+    enable = true;
+    backupAll = true;
+    startAt = "02:30";
+    # Pas de gzip : restic compresse déjà et déduplique mieux un dump en clair
+    compression = "none";
+  };
+
   services.restic.backups = {
     vps-data = {
       initialize = true;
       # Les chemins à sauvegarder (uniquement l'état)
       paths = [
         "/var/lib"
+        config.services.postgresqlBackup.location
+      ];
+
+      # Données inutiles, régénérables, ou incohérentes si copiées à chaud
+      exclude = [
+        "/var/lib/swapfile"
+        "/var/lib/postgresql" # couvert par les dumps de postgresqlBackup
+        "/var/lib/containers"
+        "/var/lib/prometheus2"
+        "${config.services.immich.mediaLocation}/thumbs"
+        "${config.services.immich.mediaLocation}/encoded-video"
       ];
 
       # Syntaxe native B2
@@ -30,6 +51,9 @@
         "--keep-weekly 4"
         "--keep-monthly 6"
       ];
+
+      # Vérification d'intégrité d'un échantillon des données après le prune
+      checkOpts = ["--read-data-subset=5%"];
     };
   };
 }
