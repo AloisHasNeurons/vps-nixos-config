@@ -5,13 +5,8 @@ on:
     paths:
       - "terraform/**"
       - ".github/workflows/ci-terraform.yml"
-  push:
-    branches:
-      - master
-      - main
-    paths:
-      - "terraform/**"
-      - ".github/workflows/ci-terraform.yml"
+  # master/main are checked by deploy.yml, which calls this workflow before deploying
+  workflow_call:
 
 jobs:
   terraform-check:

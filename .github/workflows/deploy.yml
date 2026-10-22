@@ -6,15 +6,29 @@ on:
       - master
       - main
 
+permissions:
+  contents: read
+
+# Never run two deploys at once, and never cancel one halfway through
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
 jobs:
+  ci-nix:
+    name: CI - Nix
+    uses: ./.github/workflows/ci-nix.yml
+
+  ci-terraform:
+    name: CI - Terraform
+    uses: ./.github/workflows/ci-terraform.yml
+
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    # Only deploy if CI checks passed (implicit, but good to know)
-    # environment: production # Optional: for manual approval rules
+    # Only deploy if CI checks passed
+    needs: [ci-nix, ci-terraform]
+    environment: production
 
     steps:
       - uses: actions/checkout@v7

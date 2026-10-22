@@ -11,6 +11,10 @@ on:
       - "secrets/**"
       - ".github/workflows/ci-nix.yml"
   push:
+    # master/main are checked by deploy.yml, which calls this workflow before deploying
+    branches-ignore:
+      - master
+      - main
     paths:
       - "**/*.nix"
       - "flake.lock"
@@ -19,6 +23,7 @@ on:
       - "modules/**"
       - "secrets/**"
       - ".github/workflows/ci-nix.yml"
+  workflow_call:
 
 jobs:
   nix-check:
