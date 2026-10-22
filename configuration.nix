@@ -93,6 +93,11 @@
     owner = "grafana";
     group = "grafana";
   };
+  age.secrets.grafana-admin-password = {
+    file = ./secrets/grafana-admin-password.age;
+    owner = "grafana";
+    group = "grafana";
+  };
   age.secrets.tandoor-secret-key = {
     file = ./secrets/tandoor-secret-key.age;
   };

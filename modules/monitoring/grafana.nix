@@ -1,4 +1,4 @@
-{...}: {
+{config, ...}: {
   # Prometheus - Metrics collection
   services.prometheus = {
     enable = true;
@@ -57,13 +57,17 @@
         root_url = "https://grafana.crapadouille.fr";
       };
 
-      # Enable embedding in iframes (for Homepage)
+      # Enable embedding in iframes (for Homepage).
+      # Anonymous Viewer + cookie_samesite = "disabled" is only acceptable because
+      # the grafana vhost is VPN-only. Revisit both if Grafana is ever made public.
       security = {
         admin_user = "admin";
-        admin_password = "admin"; # Change on first login!
+        # Only used when grafana.db is first created. To change the password of an
+        # existing install: `grafana cli admin reset-admin-password <new>`.
+        admin_password = "$__file{${config.age.secrets.grafana-admin-password.path}}";
         allow_embedding = true;
         cookie_samesite = "disabled";
-        secret_key = "$__file{/run/agenix/grafana-secret-key}";
+        secret_key = "$__file{${config.age.secrets.grafana-secret-key.path}}";
       };
 
       "auth.anonymous" = {

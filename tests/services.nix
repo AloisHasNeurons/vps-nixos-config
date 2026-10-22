@@ -34,6 +34,8 @@ in
         ];
 
         # --- Dummy secrets (can't decrypt real ones in test VM) ---
+        age.secrets.grafana-admin-password.file =
+          pkgs.lib.mkForce (pkgs.writeText "dummy-grafana-admin" "dummy");
         age.secrets.grafana-secret-key.file =
           pkgs.lib.mkForce (pkgs.writeText "dummy-grafana" "0123456789abcdef0123456789abcdef");
         age.secrets.immich-env.file =

@@ -28,6 +28,8 @@ in
         # --- VM Specific Overrides (to make it bootable in test) ---
 
         # Dummy Grafana secret key (since we can't decrypt real secrets)
+        age.secrets.grafana-admin-password.file =
+          pkgs.lib.mkForce (pkgs.writeText "dummy-grafana-admin" "dummy");
         age.secrets.grafana-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-grafana-key" "0123456789abcdef0123456789abcdef");
         age.secrets.tandoor-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-tandoor" "0123456789abcdef0123456789abcdef");
 

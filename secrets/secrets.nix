@@ -10,6 +10,7 @@ in {
   "homepage-env.age".publicKeys = users;
   "immich-env.age".publicKeys = users;
   "grafana-secret-key.age".publicKeys = users;
+  "grafana-admin-password.age".publicKeys = users;
   "tandoor-secret-key.age".publicKeys = users;
   "seedbox-ssh.age".publicKeys = users;
   "restic-env.age".publicKeys = users;
