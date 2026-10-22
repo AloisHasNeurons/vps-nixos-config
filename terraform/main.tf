@@ -19,8 +19,19 @@ resource "hcloud_server" "vps" {
   location    = var.location
   ssh_keys    = [hcloud_ssh_key.default.id]
 
+  # Guard against accidental destruction: the server holds the Immich photos.
+  # Hetzner requires both flags to have the same value.
+  delete_protection  = true
+  rebuild_protection = true
+
+  # Daily Hetzner snapshots (7 kept, ~20% of the server price)
+  backups = true
+
   lifecycle {
-    ignore_changes = [user_data, ssh_keys]
+    # NixOS is installed over the initial Ubuntu image, so `image` is only
+    # meaningful at creation time and must never trigger a replacement.
+    ignore_changes  = [user_data, ssh_keys, image]
+    prevent_destroy = true
   }
 
   public_net {
