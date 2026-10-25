@@ -10,36 +10,30 @@ on:
       - "modules/**"
       - "secrets/**"
       - ".github/workflows/ci-nix.yml"
-  push:
-    # master/main are checked by deploy.yml, which calls this workflow before deploying
-    branches-ignore:
-      - master
-      - main
-    paths:
-      - "**/*.nix"
-      - "flake.lock"
-      - "justfile"
-      - "tests/**"
-      - "modules/**"
-      - "secrets/**"
-      - ".github/workflows/ci-nix.yml"
+  # master/main are checked by deploy.yml, which calls this workflow before deploying
   workflow_call:
 
 jobs:
   nix-check:
-    name: Nix Flake Check
-    if: github.ref_name == 'master' || github.ref_name == 'main' || github.event_name == 'pull_request'
+    # One runner per VM test: running them in parallel on a single runner is flaky.
+    # Keep this list in sync with `checks` in flake.nix.
+    name: Nix Check (${{ matrix.check }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [security, services]
     steps:
     - uses: actions/checkout@v7
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@v23
-    - name: Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@v15
+    - name: Cachix
+      uses: cachix/cachix-action@v16
       with:
-        use-flakehub: false
-    - name: Run flake check
-      run: nix flake check --max-jobs 1
+        name: ${{ vars.CACHIX_CACHE_NAME }}
+        authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+    - name: Run ${{ matrix.check }} check
+      run: nix build -L --no-link .#checks.x86_64-linux.${{ matrix.check }}
 
   nix-lint-eval:
     name: Nix Lint & Eval
@@ -48,14 +42,17 @@ jobs:
     - uses: actions/checkout@v7
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@v23
-    - name: Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@v15
+    - name: Cachix
+      uses: cachix/cachix-action@v16
       with:
-        use-flakehub: false
+        name: ${{ vars.CACHIX_CACHE_NAME }}
+        authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
     - name: Check Format
       run: nix fmt -- . --check
     - name: Run deadnix
       run: nix run nixpkgs#deadnix -- --fail .
+    - name: Check flake outputs (no build)
+      run: nix flake check --no-build
     - name: Evaluate system toplevel (dry-run)
       run: nix build .#nixosConfigurations.vps.config.system.build.toplevel --dry-run
 

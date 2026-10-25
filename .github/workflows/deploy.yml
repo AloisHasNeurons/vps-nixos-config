@@ -5,6 +5,14 @@ on:
     branches:
       - master
       - main
+    # Docs-only changes don't need a deploy
+    paths-ignore:
+      - "**.md"
+      - "LICENSE"
+      - ".env.example"
+      - ".github/*.png"
+  # Manual runs always apply Terraform (e.g. to retry after a failed apply)
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -33,6 +41,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Terraform apply (and the Lambda build it needs) only runs when terraform/ changed
+      - name: Detect Terraform changes
+        id: changes
+        if: github.event_name == 'push'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            terraform:
+              - 'terraform/**'
+
       # 1. Configure & Cache Terraform Plugins
       - name: Configure Terraform Plugin Cache
         run: |
@@ -51,11 +69,14 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Set up Go
+        if: steps.changes.outputs.terraform != 'false'
         uses: actions/setup-go@v7
         with:
           go-version: '1.27'
+          cache-dependency-path: terraform/src/aws_health_check/go.sum
 
       - name: Build Go binaries for serverless monitoring
+        if: steps.changes.outputs.terraform != 'false'
         run: |
           # Build AWS Lambda binary
           cd terraform/src/aws_health_check
@@ -87,28 +108,30 @@ jobs:
         working-directory: ./terraform
 
       - name: Set SSH Public Key Variable
+        if: steps.changes.outputs.terraform != 'false'
         # We read the public key from the repo and export it for Terraform to use
         run: |
           echo "TF_VAR_ssh_public_key=$(cat secrets/github-actions-deploy.pub)" >> $GITHUB_ENV
 
       - name: Terraform Apply
+        if: steps.changes.outputs.terraform != 'false'
         run: terraform apply -auto-approve
         working-directory: ./terraform
         env:
           TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
 
-      # 5. Deploy NixOS
-      - name: Deploy NixOS
+      - name: Get Server IP
         run: |
-          # Get IP from Terraform output
-          cd terraform
-          SERVER_IP=$(terraform output -raw ipv4_address)
-          cd ..
-
-          echo "Deploying to $SERVER_IP..."
+          SERVER_IP=$(terraform -chdir=terraform output -raw ipv4_address)
+          echo "SERVER_IP=$SERVER_IP" >> $GITHUB_ENV
 
           # Scan host key now that we have IP
           ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+
+      # 5. Deploy NixOS
+      - name: Deploy NixOS
+        run: |
+          echo "Deploying to $SERVER_IP..."
 
           # Test SSH connectivity first
           ssh -o BatchMode=yes deploy@$SERVER_IP echo "SSH connection successful"
@@ -130,10 +153,6 @@ jobs:
       - name: Post-Deploy Smoke Test
         if: success()
         run: |
-          cd terraform
-          SERVER_IP=$(terraform output -raw ipv4_address)
-          cd ..
-
           echo "Running post-deploy smoke tests..."
 
           # 1. Tailscale service is active
@@ -179,10 +198,6 @@ jobs:
       - name: Post-Deploy Service Health Check
         if: success()
         run: |
-          cd terraform
-          SERVER_IP=$(terraform output -raw ipv4_address)
-          cd ..
-
           echo "Running service health checks..."
 
           # Nginx is responding (the catch-all vhost is HTTP-only)
@@ -212,10 +227,6 @@ jobs:
       - name: Check and Auto-Reboot
         if: success()
         run: |
-          cd terraform
-          SERVER_IP=$(terraform output -raw ipv4_address)
-          cd ..
-
           echo "Checking if reboot is required..."
           # We run check-reboot. If it exits with 1, a reboot is needed.
           if ! ssh deploy@$SERVER_IP "check-reboot"; then
