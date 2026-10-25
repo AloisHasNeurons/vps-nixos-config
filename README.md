@@ -34,6 +34,8 @@
   <a href="#-gitops--automation"><strong>GitOps</strong></a>
   ·
   <a href="#-security--continuous-verification"><strong>Security</strong></a>
+  ·
+  <a href="#backups--disaster-recovery"><strong>Backups</strong></a>
 </p>
 
 ---
@@ -134,6 +136,125 @@ This stack is designed to be a comprehensive, self-hosted ecosystem.
 *   **DNS Filtering:** AdGuard Home
 *   **Dashboard:** Homepage (Unified Service Status)
 *   **Recipe manager:** Tandoor
+
+---
+
+## Backups & Disaster Recovery
+
+The configuration lives in git, so the only thing that really needs backing up is **state**: photos, databases and service data under `/var/lib`.
+
+| Layer | What | When | Retention |
+|-------|------|------|-----------|
+| **Postgres dumps** | `pg_dumpall` of every database (`immich`, `tandoor_recipes`) to `/var/backup/postgresql/all.sql` | 02:30 | Overwritten nightly; kept in restic |
+| **Restic -> Backblaze B2** | `/var/lib` + the Postgres dumps, encrypted and deduplicated | 03:00 | 7 daily, 4 weekly, 6 monthly |
+| **Hetzner backups** | Full-disk snapshot of the server | Daily | 7 |
+| **NixOS generations** | The system itself (not data) | Every deploy | See `nix.gc` |
+
+Restic skips data that is useless, regenerable, or unsafe to copy while running: the swapfile, the live `/var/lib/postgresql` files (the dumps cover them), `/var/lib/containers`, Prometheus data, and Immich's `thumbs/` and `encoded-video/`. After each prune, restic also reads a random 5% of the repository to catch corruption. See [`modules/services/backup.nix`](modules/services/backup.nix).
+
+> **Note:** `/etc` is **not** backed up. That includes the SSH host key that agenix uses to decrypt secrets. See [full server rebuild](#4-full-server-rebuild) for what that means.
+
+### Runbook
+
+All commands run on the VPS as root. NixOS installs a `restic-vps-data` wrapper that already loads the B2 credentials, repository and password, so it works like plain `restic`.
+
+#### 1. Check that backups are healthy
+
+```bash
+systemctl list-timers 'restic-backups-*' 'postgresqlBackup*'
+journalctl -u postgresqlBackup -u restic-backups-vps-data --since yesterday --no-pager | tail -40
+
+sudo restic-vps-data snapshots                         # one snapshot per night
+sudo restic-vps-data ls latest /var/backup/postgresql  # all.sql must be there
+sudo restic-vps-data ls latest /var/lib                # top level only, no swapfile/postgresql
+sudo restic-vps-data stats --mode raw-data             # real size stored in B2
+sudo restic-vps-data check --read-data-subset=5%       # integrity check
+```
+
+If either unit fails, `OnFailure=notify-failure@%n.service` sends a Telegram alert. That includes a failed `restic check`, which runs inside the backup unit. To test the alert without breaking a backup:
+
+```bash
+systemctl show restic-backups-vps-data postgresqlBackup -p OnFailure   # hook is wired
+sudo systemctl start notify-failure@restic-backups-vps-data.service    # sends a test alert
+```
+
+#### 2. Restore test (non-destructive)
+
+Do this every few months, and after big Immich or Postgres upgrades. It doesn't touch the live services.
+
+**Databases:** load the latest dump into a throwaway Postgres on port 5433. VectorChord must be preloaded, as it is on the live server:
+
+```bash
+sudo -u postgres initdb -D /tmp/pgtest
+sudo -u postgres pg_ctl -D /tmp/pgtest -l /tmp/pgtest.log \
+  -o "-p 5433 -k /tmp -c shared_preload_libraries=vchord.so" start
+
+sudo restic-vps-data dump latest /var/backup/postgresql/all.sql \
+  | sudo -u postgres psql -h /tmp -p 5433 -q postgres 2>&1 | grep -i error
+```
+
+These errors are expected and harmless:
+- `role "postgres" already exists`: `initdb` already created it.
+- `extension "vectors" is not available`, plus related errors about `vectors.*`: leftovers of pgvecto.rs, the extension Immich used before VectorChord. Its files are no longer installed.
+
+Any other error (especially around `CREATE TABLE` or `COPY`) means the dump is damaged. Next, compare row counts with the live database. They should match, apart from uploads made since 03:00:
+
+```bash
+for port in 5432 5433; do
+  sudo -u postgres psql -h /tmp -p $port -d immich -tAc \
+    "select '$port', (select count(*) from asset), (select count(*) from person), (select count(*) from smart_search);"
+done
+
+sudo -u postgres pg_ctl -D /tmp/pgtest stop && sudo rm -rf /tmp/pgtest /tmp/pgtest.log
+```
+
+**Files:** restore a folder next to the live one and compare:
+
+```bash
+sudo restic-vps-data restore latest --target /root/restore-test --include /var/lib/immich/upload
+sudo diff -r /root/restore-test/var/lib/immich/upload /var/lib/immich/upload && echo IDENTICAL
+sudo rm -rf /root/restore-test
+```
+
+Restore a sub-folder instead if the disk doesn't have room for a second copy.
+
+#### 3. Real restores
+
+**A few files** (e.g. a deleted photo or a Tandoor image): restore to a side directory, then copy the files back with the right owner:
+
+```bash
+sudo restic-vps-data snapshots                         # pick a snapshot ID, or use `latest`
+sudo restic-vps-data restore <id> --target /root/restore --include /var/lib/immich/library/<path>
+sudo cp -a /root/restore/var/lib/immich/library/<path> /var/lib/immich/library/<path>
+sudo chown -R immich:immich /var/lib/immich/library/<path>
+```
+
+**A database rollback on the live server.** This replaces the current data, so take a fresh dump first (`sudo systemctl start postgresqlBackup`, then copy `all.sql` somewhere safe):
+
+```bash
+sudo systemctl stop immich-server immich-machine-learning tandoor-recipes
+sudo restic-vps-data dump <id> /var/backup/postgresql/all.sql > /root/restore.sql
+
+sudo -u postgres psql -c 'DROP DATABASE immich WITH (FORCE);' -c 'DROP DATABASE tandoor_recipes WITH (FORCE);'
+sudo -u postgres psql -q -f /root/restore.sql postgres 2>&1 | grep -i error   # "role ... already exists" is expected
+
+sudo systemctl start immich-server immich-machine-learning tandoor-recipes
+```
+
+`pg_dumpall` recreates the databases itself, which is why they are dropped first. Loading it into existing databases would duplicate every row.
+
+#### 4. Full server rebuild
+
+There are two ways to bring the server back. Neither has been rehearsed end-to-end yet.
+
+- **Fastest: a Hetzner backup.** In the Hetzner console, rebuild the server from its most recent backup image. The host key comes back too, so agenix works unchanged. Rebuild protection must be turned off temporarily in the console, since Terraform enables it. You lose whatever changed since that backup (up to 24 h).
+- **From scratch: restic.** Use this if the Hetzner project or server is gone, or to move to another provider.
+  1. Provision a new server (`terraform apply`) and install NixOS on it.
+  2. The new server has a **new SSH host key**, so it can't decrypt the existing secrets. On the laptop, put its key in `secrets/secrets.nix` (`ssh-keyscan <ip>`), run `agenix -r` in `secrets/`, commit, and deploy. Until this is done, agenix-backed services (Grafana, Immich, Tandoor, restic itself) fail to start.
+  3. Stop the services, then restore the state: `sudo restic-vps-data restore latest --target / --include /var/lib`.
+  4. Restore the databases as in the rollback above, using `latest`.
+  5. Make sure ownership survived. Restic restores numeric UIDs/GIDs, and a fresh install may have assigned different ones. Run `ls -ln /var/lib`, and `chown -R` where needed (for example `immich:immich /var/lib/immich`).
+  6. Start the services, then in Immich run *Administration → Jobs → Generate Thumbnails* and *Transcode Videos* (those folders aren't backed up).
 
 ---
 
