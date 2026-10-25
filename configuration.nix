@@ -105,6 +105,9 @@
   age.secrets.tandoor-secret-key = {
     file = ./secrets/tandoor-secret-key.age;
   };
+  age.secrets.acme-ovh = {
+    file = ./secrets/acme-ovh.age;
+  };
   age.secrets.alois-password = {
     file = ./secrets/alois-password.age;
   };

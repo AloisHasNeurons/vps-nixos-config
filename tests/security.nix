@@ -33,6 +33,12 @@ in
         age.secrets.grafana-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-grafana-key" "0123456789abcdef0123456789abcdef");
         age.secrets.alois-password.file =
           pkgs.lib.mkForce (pkgs.writeText "dummy-alois-password" "!");
+        age.secrets.acme-ovh.file =
+          pkgs.lib.mkForce (pkgs.writeText "dummy-acme-ovh" "OVH_ENDPOINT=ovh-eu");
+        age.secrets.tailscale-authkey.file =
+          pkgs.lib.mkForce (pkgs.writeText "dummy-tailscale-authkey" "tskey-dummy");
+        # No Tailscale control plane in the VM: don't try to log in
+        services.tailscale.authKeyFile = pkgs.lib.mkForce null;
         age.secrets.tandoor-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-tandoor" "0123456789abcdef0123456789abcdef");
 
         systemd.tmpfiles.rules = [

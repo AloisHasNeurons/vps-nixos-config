@@ -17,4 +17,6 @@ in {
   "restic-password.age".publicKeys = users;
   "telegram-alerts.age".publicKeys = users;
   "alois-password.age".publicKeys = users;
+  "acme-ovh.age".publicKeys = users;
+  "tailscale-authkey.age".publicKeys = users;
 }

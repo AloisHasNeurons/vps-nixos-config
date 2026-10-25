@@ -1,4 +1,4 @@
-{...}: let
+{config, ...}: let
   domain = "crapadouille.fr";
 in {
   # ACME Wildcard Configuration
@@ -9,7 +9,8 @@ in {
       extraDomainNames = ["*.${domain}"];
       dnsProvider = "ovh";
       dnsPropagationCheck = true;
-      environmentFile = "/var/lib/acme/ovh.env";
+      # OVH_ENDPOINT, OVH_APPLICATION_KEY, OVH_APPLICATION_SECRET, OVH_CONSUMER_KEY
+      environmentFile = config.age.secrets.acme-ovh.path;
       group = "nginx"; # Gives Nginx permission to read the keys
     };
   };
