@@ -56,4 +56,8 @@
       checkOpts = ["--read-data-subset=5%"];
     };
   };
+
+  # Alertes Telegram si le dump ou le backup échoue (y compris le `restic check`)
+  systemd.services.postgresqlBackup.unitConfig.OnFailure = "notify-failure@%n.service";
+  systemd.services.restic-backups-vps-data.unitConfig.OnFailure = "notify-failure@%n.service";
 }
