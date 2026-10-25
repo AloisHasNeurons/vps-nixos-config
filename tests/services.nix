@@ -42,6 +42,8 @@ in
           pkgs.lib.mkForce (pkgs.writeText "dummy-immich" "DB_PASSWORD=dummy");
         age.secrets.homepage-env.file =
           pkgs.lib.mkForce (pkgs.writeText "dummy-homepage" "HOMEPAGE_VAR=dummy");
+        age.secrets.alois-password.file =
+          pkgs.lib.mkForce (pkgs.writeText "dummy-alois-password" "!");
         age.secrets.tandoor-secret-key.file =
           pkgs.lib.mkForce (pkgs.writeText "dummy-tandoor" "0123456789abcdef0123456789abcdef");
 

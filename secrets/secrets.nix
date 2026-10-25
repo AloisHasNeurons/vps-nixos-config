@@ -16,4 +16,5 @@ in {
   "restic-env.age".publicKeys = users;
   "restic-password.age".publicKeys = users;
   "telegram-alerts.age".publicKeys = users;
+  "alois-password.age".publicKeys = users;
 }

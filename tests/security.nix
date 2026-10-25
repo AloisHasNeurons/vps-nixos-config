@@ -31,6 +31,8 @@ in
         age.secrets.grafana-admin-password.file =
           pkgs.lib.mkForce (pkgs.writeText "dummy-grafana-admin" "dummy");
         age.secrets.grafana-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-grafana-key" "0123456789abcdef0123456789abcdef");
+        age.secrets.alois-password.file =
+          pkgs.lib.mkForce (pkgs.writeText "dummy-alois-password" "!");
         age.secrets.tandoor-secret-key.file = pkgs.lib.mkForce (pkgs.writeText "dummy-tandoor" "0123456789abcdef0123456789abcdef");
 
         systemd.tmpfiles.rules = [

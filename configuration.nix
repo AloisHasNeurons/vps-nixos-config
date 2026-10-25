@@ -1,5 +1,9 @@
 # /Documents/nix-config/vps/configuration.nix
-{pkgs, ...}: {
+{
+  pkgs,
+  config,
+  ...
+}: {
   imports = [
     ./modules/services/adguard.nix
     ./modules/monitoring/grafana.nix
@@ -101,6 +105,9 @@
   age.secrets.tandoor-secret-key = {
     file = ./secrets/tandoor-secret-key.age;
   };
+  age.secrets.alois-password = {
+    file = ./secrets/alois-password.age;
+  };
   age.secrets.telegram-alerts = {
     file = ./secrets/telegram-alerts.age;
   };
@@ -164,7 +171,8 @@
   users.users.alois = {
     isNormalUser = true;
     extraGroups = ["wheel"];
-    hashedPassword = "$y$j9T$njIq5wNQMvXeHHAgkkqRs.$BPmNgJG96aMqIU48AjXuElMy1xbU6tGmOCw4UTRhlt9";
+    # yescrypt hash (`mkpasswd -m yescrypt`), used for sudo and console login
+    hashedPasswordFile = config.age.secrets.alois-password.path;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINa1VOKGJI/j5mfvo5QsKk/tX+vNr3CdjdYYNfbPxdDK alois@fedora"
     ];

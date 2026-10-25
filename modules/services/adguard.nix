@@ -12,6 +12,10 @@
       users = [
         {
           name = "admin";
+          # Kept inline on purpose: with mutableSettings = false the whole
+          # config ends up in /nix/store anyway, and injecting it from agenix would need
+          # a custom preStart on a critical service. The passphrase is long enough that
+          # the public bcrypt hash can't realistically be cracked.
           password = "$2a$12$IZz/nGZ3Mp0vsoqOnm2MzuHzeHKRljy4xWp1McpUk.I0wE5x8WvuG";
         }
       ];
