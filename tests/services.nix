@@ -132,7 +132,7 @@ in
 
       # Verify Nginx proxies to services that are actually running
       # (excludes Grafana/Homepage whose backends aren't up in the test VM)
-      for vhost in ["adguard", "tandoor"]:
+      for vhost in ["adguard", "tandoor", "share.photos"]:
           http_code = server.succeed(
               f"curl -sk -o /dev/null -w '%{{http_code}}' "
               f"-H 'Host: {vhost}.crapadouille.fr' https://localhost/"
@@ -143,6 +143,15 @@ in
                   f"backend service is not reachable!"
               )
           print(f"✅ Test 3: {vhost}.crapadouille.fr responds ({http_code})")
+
+      # AdGuard rewrites our domain to the Tailscale IP for tailnet clients,
+      # even for subdomains that have a public record (photos, share)
+      for vhost in ["photos", "share.photos", "grafana"]:
+          server.wait_until_succeeds(
+              f"dig +short @127.0.0.1 {vhost}.crapadouille.fr | grep -qx 100.109.82.105",
+              timeout=30
+          )
+          print(f"✅ Test 3: AdGuard rewrites {vhost}.crapadouille.fr to the Tailscale IP")
 
       # ══════════════════════════════════════════════
       # Test 4: SSH security settings are enforced

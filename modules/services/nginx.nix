@@ -6,7 +6,8 @@ in {
     acceptTerms = true;
     defaults.email = "alois.vincent@imt-atlantique.net";
     certs."${domain}" = {
-      extraDomainNames = ["*.${domain}"];
+      # The wildcard only covers one level: share.photos needs its own name
+      extraDomainNames = ["*.${domain}" "share.photos.${domain}"];
       dnsProvider = "ovh";
       dnsPropagationCheck = true;
       # OVH_ENDPOINT, OVH_APPLICATION_KEY, OVH_APPLICATION_SECRET, OVH_CONSUMER_KEY
@@ -30,23 +31,6 @@ in {
       add_header X-Content-Type-Options "nosniff" always;
       # CSP: unsafe-eval needed for Grafana plugins, unsafe-inline for inline scripts
       add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'" always;
-
-      # Upstreams for Immich Traffic Splitting
-      upstream immich_public_proxy {
-        server 127.0.0.1:3004;
-      }
-      upstream immich_vpn_direct {
-        server 127.0.0.1:2283;
-      }
-
-      # Geo-Map source IP to upstream name (Supports CIDR)
-      # VPN/Local -> Immich Direct
-      # Public -> Immich Proxy
-      geo $remote_addr $immich_backend {
-        default          immich_public_proxy;
-        100.64.0.0/10    immich_vpn_direct; # Tailscale CGNAT range
-        127.0.0.1        immich_vpn_direct;
-      }
     '';
 
     virtualHosts = {
@@ -114,23 +98,27 @@ in {
         useACMEHost = domain;
         forceSSL = true;
         locations."/" = {
-          proxyPass = "http://$immich_backend";
+          proxyPass = "http://127.0.0.1:2283";
           proxyWebsockets = true;
-          # Immich needs larger uploads for photos/videos
+          # Restrict to VPN. Immich needs larger uploads for photos/videos
           extraConfig = ''
-            add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
-            add_header X-Content-Type-Options "nosniff" always;
-            add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'" always;
+            allow 100.64.0.0/10; # Tailscale CGNAT range
+            allow 127.0.0.1;
+            deny all;
 
             client_max_body_size 50G;
             proxy_read_timeout 600s;
             proxy_send_timeout 600s;
-
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
           '';
+        };
+      };
+
+      # Public: Immich Public Proxy only serves the links shared from Immich
+      "share.photos.${domain}" = {
+        useACMEHost = domain;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:${toString config.services.immich-public-proxy.port}";
         };
       };
 

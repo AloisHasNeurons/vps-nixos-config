@@ -49,10 +49,13 @@
         safe_search = {
           enabled = false;
         };
-        custom_rules = [
-          "||crapadouille.fr^$dnsrewrite=100.109.82.105"
-        ];
       };
+
+      # Tailnet clients reach every subdomain over Tailscale, whatever the
+      # public DNS says. Top-level key: AdGuard ignores unknown keys silently.
+      user_rules = [
+        "||crapadouille.fr^$dnsrewrite=100.109.82.105"
+      ];
 
       filters = [
         {

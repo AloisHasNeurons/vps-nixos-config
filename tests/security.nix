@@ -127,7 +127,7 @@ in
       print("Success: Immich Public Proxy (3004) is not reachable from outside.")
 
       # 5. Verify ALL VPN-restricted admin panels return 403 from outside
-      vpn_restricted_vhosts = ["adguard", "tandoor", "home", "grafana"]
+      vpn_restricted_vhosts = ["adguard", "tandoor", "home", "grafana", "photos"]
 
       for vhost in vpn_restricted_vhosts:
           http_code = scanner.succeed(

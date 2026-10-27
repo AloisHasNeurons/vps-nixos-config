@@ -208,13 +208,13 @@ jobs:
 
           # Immich public proxy is reachable
           CODE=$(curl -sk -o /dev/null -w '%{http_code}' \
-            -H 'Host: photos.crapadouille.fr' https://$SERVER_IP/)
+            -H 'Host: share.photos.crapadouille.fr' https://$SERVER_IP/share/healthcheck)
           echo "$CODE" | grep -qE '200|302' \
             && echo "✅ Immich public proxy responding" \
             || { echo "❌ Immich public proxy not responding (got $CODE)"; exit 1; }
 
           # VPN-restricted services return 403 from outside
-          for host in adguard tandoor home grafana; do
+          for host in adguard tandoor home grafana photos; do
             CODE=$(curl -sk -o /dev/null -w '%{http_code}' \
               -H "Host: $host.crapadouille.fr" https://$SERVER_IP/)
             [ "$CODE" = "403" ] \
