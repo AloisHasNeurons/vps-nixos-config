@@ -91,6 +91,7 @@ in
           "prometheus.service",
           "prometheus-node-exporter.service",
           "tandoor-recipes.service",
+          "immich-public-proxy.service",
           "fail2ban.service",
           "sshd.service",
       ]
@@ -111,6 +112,7 @@ in
           80: "Nginx HTTP",
           443: "Nginx HTTPS",
           3000: "AdGuard Home",
+          3004: "Immich Public Proxy",
           8085: "Tandoor",
           9090: "Prometheus",
           9100: "Node Exporter",

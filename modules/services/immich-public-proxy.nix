@@ -1,36 +1,26 @@
-{...}: {
-  # Enable Podman (Daemonless container engine)
-  virtualisation.oci-containers.backend = "podman";
-  virtualisation.podman = {
+{config, ...}: {
+  # Immich Public Proxy - serves shared links (/share/...) to the public
+  # without exposing Immich itself. Nginx routes non-VPN traffic here.
+  services.immich-public-proxy = {
     enable = true;
-    dockerCompat = true; # Alias docker=podman
-    defaultNetwork.settings.dns_enabled = true;
+    immichUrl = "http://127.0.0.1:${toString config.services.immich.port}";
+    port = 3004;
+
+    # Same headers as the upstream config.json, which the Docker image used
+    settings.ipp.responseHeaders = {
+      "Cache-Control" = "public, max-age=2592000";
+      "Access-Control-Allow-Origin" = "*";
+    };
   };
 
-  # Immich Public Proxy Container
-  virtualisation.oci-containers.containers.immich-public-proxy = {
-    image = "ghcr.io/alangrainger/immich-public-proxy:latest";
-    autoStart = true;
+  systemd.services.immich-public-proxy = {
+    # Not exposed by the module: the public URL used in link previews
+    environment.PUBLIC_BASE_URL = "https://photos.crapadouille.fr";
 
-    # Use Host Networking so it can reach Immich on 127.0.0.1:2283
-    extraOptions = ["--network=host"];
+    # IPP binds 0.0.0.0 and has no listen address option. It only talks to
+    # nginx and Immich over loopback, so keep it off every other interface.
+    serviceConfig.RestrictNetworkInterfaces = "lo";
 
-    environment = {
-      # The URL of the Immich Server (Localhost because of network=host)
-      IMMICH_URL = "http://127.0.0.1:2283";
-
-      # The Public URL users visit
-      PUBLIC_URL = "https://photos.crapadouille.fr";
-
-      # The Internal Port the proxy listens on
-      IPP_PORT = "3004";
-
-      # Optional: Cache control
-      # 1440 mins = 24 hours
-      CACHE_MAX_AGE = "1440";
-
-      # Debug logging
-      LOG_LEVEL = "info";
-    };
+    unitConfig.OnFailure = "notify-failure@%n.service";
   };
 }

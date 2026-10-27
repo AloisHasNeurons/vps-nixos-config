@@ -120,6 +120,12 @@ in
 
       print("Success: Public firewall is clean. No unexpected ports exposed.")
 
+      # Immich Public Proxy listens on 0.0.0.0:3004 (no bind option), and 3004 is
+      # outside nmap's top 1000 ports: check explicitly that it stays unreachable
+      server.wait_for_open_port(3004)
+      scanner.fail(f"curl -s --max-time 5 http://{target_ip}:3004/share/healthcheck")
+      print("Success: Immich Public Proxy (3004) is not reachable from outside.")
+
       # 5. Verify ALL VPN-restricted admin panels return 403 from outside
       vpn_restricted_vhosts = ["adguard", "tandoor", "home", "grafana"]
 
