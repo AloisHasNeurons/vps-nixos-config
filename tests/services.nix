@@ -153,6 +153,16 @@ in
           )
           print(f"✅ Test 3: AdGuard rewrites {vhost}.crapadouille.fr to the Tailscale IP")
 
+      # The rewrite must be limited to A/AAAA: AAAA gets an empty answer, and
+      # other types (SOA, needed by ACME's zone lookup) are not touched
+      server.succeed("test -z \"$(dig +short AAAA @127.0.0.1 photos.crapadouille.fr)\"")
+      # No upstream in the VM: a SOA query that is not rewritten times out
+      soa = server.succeed("dig +noall +comments +time=3 +tries=1 SOA @127.0.0.1 crapadouille.fr || true")
+      print(soa)
+      if "status: NOERROR" in soa and "ANSWER: 0" in soa:
+          raise Exception("AdGuard rewrite also catches SOA queries (empty NOERROR answer)")
+      print("✅ Test 3: AdGuard rewrite only applies to A/AAAA")
+
       # ══════════════════════════════════════════════
       # Test 4: SSH security settings are enforced
       # ══════════════════════════════════════════════

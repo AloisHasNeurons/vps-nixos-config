@@ -10,6 +10,9 @@ in {
       extraDomainNames = ["*.${domain}" "share.photos.${domain}"];
       dnsProvider = "ovh";
       dnsPropagationCheck = true;
+      # The server resolves through Tailscale DNS, i.e. its own AdGuard, which
+      # rewrites our domain. Use public DNS so the zone lookup sees the real zone.
+      dnsResolver = "1.1.1.1:53";
       # OVH_ENDPOINT, OVH_APPLICATION_KEY, OVH_APPLICATION_SECRET, OVH_CONSUMER_KEY
       environmentFile = config.age.secrets.acme-ovh.path;
       group = "nginx"; # Gives Nginx permission to read the keys

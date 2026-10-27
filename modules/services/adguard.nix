@@ -53,8 +53,10 @@
 
       # Tailnet clients reach every subdomain over Tailscale, whatever the
       # public DNS says. Top-level key: AdGuard ignores unknown keys silently.
+      # Only A/AAAA: an untyped rewrite also empties SOA/TXT answers, which broke
+      # lego's zone lookup. AAAA gets an empty answer, keeping clients on IPv4.
       user_rules = [
-        "||crapadouille.fr^$dnsrewrite=100.109.82.105"
+        "||crapadouille.fr^$dnstype=A|AAAA,dnsrewrite=100.109.82.105"
       ];
 
       filters = [
