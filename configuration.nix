@@ -16,6 +16,7 @@
     ./modules/system/security-hardening.nix
 
     ./modules/networking/tailscale.nix
+    ./modules/system/shell.nix
 
     ./modules/monitoring/alerts.nix
 
@@ -146,7 +147,9 @@
 
       MaxAuthTries 3
       LoginGraceTime 20
-      MaxSessions 3
+      # Sessions per connection, not logins: kitty reuses one SSH connection
+      # for every extra window it opens on the server
+      MaxSessions 10
       ClientAliveInterval 300
       ClientAliveCountMax 2
       AllowAgentForwarding no
