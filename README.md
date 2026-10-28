@@ -96,7 +96,7 @@ You can't manage what you can't measure. I integrated a full monitoring stack to
 
 *   **Prometheus:** Scrapes metrics from system services (`node_exporter`) and applications.
 *   **Grafana:** Visualizes these metrics in a unified dashboard.
-*   **Homepage:** A central entry point aggregating status from all services into a unified UI.
+*   **Glance:** A central start page with service status, photo and DNS stats, and the key Grafana panels.
 *   **System Alerts:** Any systemd unit failure triggers an automatic Telegram webhook alert containing the last 5 log lines of the crashed service.
 
 ---
@@ -134,7 +134,7 @@ This stack is designed to be a comprehensive, self-hosted ecosystem.
 *   **Observability:** Grafana + Prometheus
 *   **Media & Storage:** Immich (Self-hosted Photos/Videos)
 *   **DNS Filtering:** AdGuard Home
-*   **Dashboard:** Homepage (Unified Service Status)
+*   **Dashboard:** Glance (Service Status & Grafana Panels)
 *   **Recipe manager:** Tandoor
 
 ---

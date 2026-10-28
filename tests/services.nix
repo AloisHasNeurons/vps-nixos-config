@@ -80,7 +80,7 @@ in
       # ══════════════════════════════════════════════
       # Test 1: All critical systemd units are active
       # ══════════════════════════════════════════════
-      # NOTE: Grafana, Homepage, and Immich are excluded because they depend on
+      # NOTE: Grafana, Glance, and Immich are excluded because they depend on
       # agenix secrets (grafana-secret-key, homepage-env, immich-env).
       # Agenix can't decrypt dummy files in the test VM, so the secret files
       # under /run/agenix/ never get created and these services fail to start.
@@ -137,7 +137,7 @@ in
       print("✅ Test 3: Nginx default catch-all responds correctly")
 
       # Verify Nginx proxies to services that are actually running
-      # (excludes Grafana/Homepage whose backends aren't up in the test VM)
+      # (excludes Grafana/Glance whose backends aren't up in the test VM)
       for vhost in ["adguard", "tandoor", "share.photos"]:
           http_code = server.succeed(
               f"curl -sk -o /dev/null -w '%{{http_code}}' "

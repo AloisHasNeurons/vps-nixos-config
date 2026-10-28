@@ -9,7 +9,7 @@
     ./modules/monitoring/prometheus.nix
     ./modules/monitoring/alertmanager.nix
     ./modules/monitoring/grafana.nix
-    ./modules/services/homepage.nix
+    ./modules/services/glance.nix
     ./modules/services/immich.nix
     ./modules/services/immich-public-proxy.nix
     ./modules/services/tandoor.nix
@@ -93,6 +93,7 @@
 
   # Secrets
   age.identityPaths = ["/etc/ssh/ssh_host_ed25519_key"];
+  # Named after Homepage, which Glance replaced: same HOMEPAGE_VAR_* variables
   age.secrets.homepage-env.file = ./secrets/homepage-env.age;
   age.secrets.immich-env.file = ./secrets/immich-env.age;
   age.secrets.grafana-secret-key = {

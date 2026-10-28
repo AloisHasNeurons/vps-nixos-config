@@ -107,7 +107,7 @@
                       from = "host";
                       host.port = 13001;
                       guest.port = 3001;
-                    } # Homepage
+                    } # Glance
                   ];
                 };
               };

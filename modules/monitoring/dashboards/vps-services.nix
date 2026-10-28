@@ -1,5 +1,5 @@
 # "VPS Services" dashboard: sites, certificates, backups, alerts, nginx, Postgres.
-# Panel IDs are stable on purpose: Homepage embeds panels by ID (homepage.nix).
+# Panel IDs are stable on purpose: Glance embeds panels by ID (glance.nix).
 {lib}: let
   # Same datasource variable as Node Exporter Full: no hardcoded datasource UID
   ds = {

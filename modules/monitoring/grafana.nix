@@ -5,7 +5,7 @@
   ...
 }: let
   # Node Exporter Full (grafana.com #1860). Pinned to the last version before the
-  # October 2026 reorganization; panel IDs 74/77/78/152, embedded by Homepage,
+  # October 2026 reorganization; panel IDs 74/77/78/152, embedded by Glance,
   # are the same in every version checked.
   nodeExporterFull = pkgs.fetchurl {
     url = "https://raw.githubusercontent.com/rfmoz/grafana-dashboards/99a25cc154c21c4fcbae1aa24352bf1b6764d847/prometheus/node-exporter-full.json";
@@ -35,7 +35,7 @@ in {
         root_url = "https://grafana.crapadouille.fr";
       };
 
-      # Enable embedding in iframes (for Homepage).
+      # Enable embedding in iframes (for Glance).
       # Anonymous Viewer + cookie_samesite = "disabled" is only acceptable because
       # the grafana vhost is VPN-only. Revisit both if Grafana is ever made public.
       security = {
