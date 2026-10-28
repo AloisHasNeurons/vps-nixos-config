@@ -6,6 +6,8 @@
 }: {
   imports = [
     ./modules/services/adguard.nix
+    ./modules/monitoring/prometheus.nix
+    ./modules/monitoring/alertmanager.nix
     ./modules/monitoring/grafana.nix
     ./modules/services/homepage.nix
     ./modules/services/immich.nix

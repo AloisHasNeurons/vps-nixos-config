@@ -90,6 +90,9 @@ in
           "adguardhome.service",
           "prometheus.service",
           "prometheus-node-exporter.service",
+          "prometheus-blackbox-exporter.service",
+          "prometheus-nginx-exporter.service",
+          "prometheus-postgres-exporter.service",
           "tandoor-recipes.service",
           "immich-public-proxy.service",
           "fail2ban.service",
@@ -116,6 +119,9 @@ in
           8085: "Tandoor",
           9090: "Prometheus",
           9100: "Node Exporter",
+          9113: "nginx exporter",
+          9115: "Blackbox exporter",
+          9187: "Postgres exporter",
       }
 
       for port, name in expected_ports.items():
@@ -194,6 +200,28 @@ in
           timeout=60
       )
       print("✅ Test 5: Prometheus is scraping node target")
+
+      # Alert rules are loaded (Alertmanager itself needs the Telegram secret,
+      # like Grafana, so it isn't started here)
+      server.wait_until_succeeds(
+          "curl -sf http://127.0.0.1:9090/api/v1/rules -o /tmp/rules"
+          " && grep -q DiskAlmostFull /tmp/rules && grep -q BackupStale /tmp/rules",
+          timeout=60
+      )
+      print("✅ Test 5: Prometheus alert rules are loaded")
+
+      # nginx stub_status works for the exporter, and isn't shadowed by the
+      # catch-all vhost's "Hello from Nginx!"
+      server.succeed("curl -sf http://127.0.0.1/nginx_status | grep -q 'Active connections'")
+      server.wait_until_succeeds(
+          "curl -sf http://127.0.0.1:9113/metrics | grep -q '^nginx_up 1'", timeout=60
+      )
+      print("✅ Test 5: nginx exporter reads stub_status")
+
+      server.wait_until_succeeds(
+          "curl -sf http://127.0.0.1:9187/metrics -o /tmp/pg && grep -q '^pg_up 1' /tmp/pg", timeout=60
+      )
+      print("✅ Test 5: Postgres exporter is connected")
 
       print("🎉 All service integration tests passed!")
     '';

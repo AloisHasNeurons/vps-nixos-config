@@ -1,4 +1,16 @@
-{config, ...}: {
+{config, ...}: let
+  # A single Grafana panel as an iframe. Panel IDs are fixed: see
+  # modules/monitoring/grafana.nix and modules/monitoring/dashboards/
+  grafanaPanel = dashboard: panel: height: {
+    widget = {
+      type = "iframe";
+      src = "https://grafana.crapadouille.fr/d-solo/${dashboard}?orgId=1&refresh=1m&panelId=panel-${toString panel}&var-node=vps&theme=dark";
+      inherit height;
+    };
+  };
+  nodeExporterFull = "rYdddlPWk/node-exporter-full";
+  vpsServices = "vps-services/vps-services";
+in {
   services.homepage-dashboard = {
     enable = true;
     listenPort = 3001;
@@ -15,6 +27,18 @@
           System = {
             style = "row";
             columns = 4;
+          };
+        }
+        {
+          Health = {
+            style = "row";
+            columns = 5;
+          };
+        }
+        {
+          Activity = {
+            style = "row";
+            columns = 3;
           };
         }
         {
@@ -72,42 +96,10 @@
       # Row 1: System Monitoring (Grafana iframes + link)
       {
         System = [
-          {
-            "CPU Usage" = {
-              widget = {
-                type = "iframe";
-                src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-77&var-node=vps&theme=dark";
-                height = 200;
-              };
-            };
-          }
-          {
-            "Memory" = {
-              widget = {
-                type = "iframe";
-                src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-78&var-node=vps&theme=dark";
-                height = 200;
-              };
-            };
-          }
-          {
-            "Network" = {
-              widget = {
-                type = "iframe";
-                src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-74&var-node=vps&theme=dark";
-                height = 200;
-              };
-            };
-          }
-          {
-            "Disk I/O" = {
-              widget = {
-                type = "iframe";
-                src = "https://grafana.crapadouille.fr/d-solo/rYdddlPWk/node-exporter-full?orgId=1&refresh=1m&panelId=panel-152&var-node=vps&theme=dark";
-                height = 200;
-              };
-            };
-          }
+          {"CPU Usage" = grafanaPanel nodeExporterFull 77 200;}
+          {"Memory" = grafanaPanel nodeExporterFull 78 200;}
+          {"Network" = grafanaPanel nodeExporterFull 74 200;}
+          {"Disk Space" = grafanaPanel nodeExporterFull 152 200;}
           {
             Grafana = {
               icon = "grafana.svg";
@@ -116,6 +108,24 @@
               ping = "http://127.0.0.1:3002";
             };
           }
+        ];
+      }
+      # Health: is everything up, renewed and backed up (VPS Services dashboard)
+      {
+        Health = [
+          {"Sites" = grafanaPanel vpsServices 1 150;}
+          {"Certificate expiry" = grafanaPanel vpsServices 2 150;}
+          {"Last backup" = grafanaPanel vpsServices 3 150;}
+          {"Failed units" = grafanaPanel vpsServices 4 150;}
+          {"Firing alerts" = grafanaPanel vpsServices 5 150;}
+        ];
+      }
+      # Activity: response times, web traffic, database growth
+      {
+        Activity = [
+          {"Response time" = grafanaPanel vpsServices 6 220;}
+          {"HTTP requests" = grafanaPanel vpsServices 9 220;}
+          {"Database size" = grafanaPanel vpsServices 11 220;}
         ];
       }
       # Row 2: Network

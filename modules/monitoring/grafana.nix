@@ -1,50 +1,28 @@
-{config, ...}: {
-  # Prometheus - Metrics collection
-  services.prometheus = {
-    enable = true;
-    port = 9090;
-    listenAddress = "127.0.0.1";
-
-    exporters = {
-      node = {
-        enable = true;
-        port = 9100;
-        listenAddress = "127.0.0.1";
-        enabledCollectors = [
-          "cpu"
-          "diskstats"
-          "filesystem"
-          "loadavg"
-          "meminfo"
-          "netdev"
-          "stat"
-          "time"
-          "vmstat"
-          "systemd"
-          "processes"
-        ];
-      };
-    };
-
-    scrapeConfigs = [
-      {
-        job_name = "node";
-        static_configs = [
-          {
-            targets = ["127.0.0.1:9100"];
-            labels.instance = "vps";
-          }
-        ];
-      }
-      {
-        job_name = "prometheus";
-        static_configs = [{targets = ["127.0.0.1:9090"];}];
-      }
-    ];
-
-    retentionTime = "30d";
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}: let
+  # Node Exporter Full (grafana.com #1860). Pinned to the last version before the
+  # October 2026 reorganization; panel IDs 74/77/78/152, embedded by Homepage,
+  # are the same in every version checked.
+  nodeExporterFull = pkgs.fetchurl {
+    url = "https://raw.githubusercontent.com/rfmoz/grafana-dashboards/99a25cc154c21c4fcbae1aa24352bf1b6764d847/prometheus/node-exporter-full.json";
+    hash = "sha256-3+opah4hCqZoGXYU03CLVnGKmb53lKHCwBLNUdp+y4k=";
   };
 
+  dashboards = pkgs.linkFarm "grafana-dashboards" [
+    {
+      name = "node-exporter-full.json";
+      path = nodeExporterFull;
+    }
+    {
+      name = "vps-services.json";
+      path = pkgs.writeText "vps-services.json" (builtins.toJSON (import ./dashboards/vps-services.nix {inherit lib;}));
+    }
+  ];
+in {
   # Grafana - Visualization
   services.grafana = {
     enable = true;
@@ -77,6 +55,13 @@
       };
 
       auth.disable_login_form = false;
+
+      # Nix manages updates
+      analytics = {
+        check_for_updates = false;
+        check_for_plugin_updates = false;
+        reporting_enabled = false;
+      };
     };
 
     provision = {
@@ -91,17 +76,16 @@
         }
       ];
 
+      # Dashboards come from git: edits made in the UI can't be saved, change
+      # the JSON (or dashboards/*.nix) instead
       dashboards.settings.providers = [
         {
           name = "default";
-          options.path = "/var/lib/grafana/dashboards";
+          options.path = dashboards;
         }
       ];
     };
   };
 
-  # Create dashboards directory
-  systemd.tmpfiles.rules = [
-    "d /var/lib/grafana/dashboards 0755 grafana grafana -"
-  ];
+  systemd.services.grafana.unitConfig.OnFailure = "notify-failure@%n.service";
 }

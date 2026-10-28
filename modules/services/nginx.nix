@@ -217,9 +217,11 @@ in {
       # };
 
       # Default catch-all
+      # In a location, not at server level: a server-level `return` would also
+      # answer /nginx_status (statusPage, for the Prometheus nginx exporter)
       "localhost" = {
         default = true;
-        extraConfig = ''
+        locations."/".extraConfig = ''
           return 200 "Hello from Nginx!";
         '';
       };
