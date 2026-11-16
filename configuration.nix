@@ -49,6 +49,10 @@
     options = "--delete-older-than 3d";
   };
 
+  # Cap the journal: the default (10% of the disk) let it grow to 4 GB, and a
+  # nixpkgs bump temporarily needs room for two full system closures (~7.5 GB each)
+  services.journald.settings.Journal.SystemMaxUse = "1G";
+
   # Utility to check if reboot is needed
   environment.systemPackages = [
     pkgs.dnsutils # for dig (used by post-deploy DNS smoke tests)
