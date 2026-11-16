@@ -102,8 +102,9 @@ in
       open_ports = re.findall(r"(\d+)/tcp\s+open", scan_output)
 
       # 3. Define the Whitelist (Publicly Allowed Ports)
-      # 22: SSH, 80: HTTP (ACME/Redirect), 443: HTTPS, 25565: Minecraft
-      allowed_ports = ["22", "80", "443", "25565"]
+      # 22: SSH, 80: HTTP (ACME/Redirect), 443: HTTPS
+      # (add 25565 back if the Minecraft server is re-enabled)
+      allowed_ports = ["22", "80", "443"]
 
       # 4. Verify no unexpected ports are open
       unexpected_ports = [p for p in open_ports if p not in allowed_ports]

@@ -129,6 +129,17 @@
       {pkgs, ...}: {
         security = pkgs.callPackage ./tests/security.nix {inherit inputs;};
         services = pkgs.callPackage ./tests/services.nix {inherit inputs;};
+
+        # The Minecraft server is disabled on the VPS: evaluate it anyway so the
+        # module keeps working. Eval only, the context is dropped so nothing is built.
+        minecraft-eval = let
+          withMinecraft = self.nixosConfigurations.vps.extendModules {
+            modules = [{my.minecraft.enable = true;}];
+          };
+        in
+          pkgs.writeText "minecraft-eval" (
+            builtins.unsafeDiscardStringContext withMinecraft.config.system.build.toplevel.drvPath
+          );
       }
     );
 
