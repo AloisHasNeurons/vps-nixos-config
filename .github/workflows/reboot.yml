@@ -45,13 +45,20 @@ jobs:
         
         echo "Rebooting $SERVER_IP..."
         
-        # Scan host key
+        # Pin the host key from the repo instead of trusting ssh-keyscan
         mkdir -p ~/.ssh
         chmod 700 ~/.ssh
-        ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+        printf 'Host *\n  StrictHostKeyChecking yes\n' >> ~/.ssh/config
+        echo "$SERVER_IP $(cat secrets/vps-host-key.pub)" >> ~/.ssh/known_hosts
 
-        # Issue the reboot command. We use || true because the SSH connection 
+        # Issue the reboot command. We use || true because the SSH connection
         # is expected to drop abruptly when the server goes down.
         ssh -o BatchMode=yes deploy@$SERVER_IP "sudo reboot" || true
-        
+
         echo "Reboot command sent successfully."
+        echo "SERVER_IP=$SERVER_IP" >> "$GITHUB_ENV"
+
+    - name: Verify Server After Reboot
+      run: |
+        bash .github/scripts/wait-for-reboot.sh "$SERVER_IP"
+        bash .github/scripts/health-check.sh "$SERVER_IP"

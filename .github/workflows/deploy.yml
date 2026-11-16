@@ -94,13 +94,12 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Add Host Key to Known Hosts
-        # Adding the server as a known host to prevent interactive prompt
-        # We use ssh-keyscan on the IP output from Terraform
-        # Note: This has a small "TOFU" (Trust On First Use) security implication in CI
+      - name: Prepare SSH Directory
+        # known_hosts is filled in "Get Server IP" from the pinned host key
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
+          printf 'Host *\n  StrictHostKeyChecking yes\n' >> ~/.ssh/config
 
       # 4. Apply Infrastructure (Terraform)
       - name: Terraform Init
@@ -125,8 +124,8 @@ jobs:
           SERVER_IP=$(terraform -chdir=terraform output -raw ipv4_address)
           echo "SERVER_IP=$SERVER_IP" >> $GITHUB_ENV
 
-          # Scan host key now that we have IP
-          ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+          # Pin the host key from the repo instead of trusting ssh-keyscan
+          echo "$SERVER_IP $(cat secrets/vps-host-key.pub)" >> ~/.ssh/known_hosts
 
       # 5. Deploy NixOS
       - name: Deploy NixOS
@@ -197,34 +196,10 @@ jobs:
 
       - name: Post-Deploy Service Health Check
         if: success()
-        run: |
-          echo "Running service health checks..."
-
-          # Nginx is responding (the catch-all vhost is HTTP-only)
-          CODE=$(curl -s -o /dev/null -w '%{http_code}' http://$SERVER_IP/)
-          [ "$CODE" = "200" ] \
-            && echo "✅ Nginx HTTP responding" \
-            || { echo "❌ Nginx not responding on HTTP (got $CODE)"; exit 1; }
-
-          # Immich public proxy is reachable
-          CODE=$(curl -sk -o /dev/null -w '%{http_code}' \
-            -H 'Host: share.photos.crapadouille.fr' https://$SERVER_IP/share/healthcheck)
-          echo "$CODE" | grep -qE '200|302' \
-            && echo "✅ Immich public proxy responding" \
-            || { echo "❌ Immich public proxy not responding (got $CODE)"; exit 1; }
-
-          # VPN-restricted services return 403 from outside
-          for host in adguard tandoor home grafana photos; do
-            CODE=$(curl -sk -o /dev/null -w '%{http_code}' \
-              -H "Host: $host.crapadouille.fr" https://$SERVER_IP/)
-            [ "$CODE" = "403" ] \
-              && echo "✅ $host.crapadouille.fr correctly restricted (403)" \
-              || { echo "❌ $host.crapadouille.fr returned $CODE (expected 403)"; exit 1; }
-          done
-
-          echo "All service health checks passed!"
+        run: bash .github/scripts/health-check.sh "$SERVER_IP"
 
       - name: Check and Auto-Reboot
+        id: reboot
         if: success()
         run: |
           echo "Checking if reboot is required..."
@@ -233,6 +208,14 @@ jobs:
             echo "Reboot required detected! Initiating automatic reboot..."
             ssh -o BatchMode=yes deploy@$SERVER_IP "sudo reboot" || true
             echo "Reboot command sent successfully."
+            echo "rebooted=true" >> "$GITHUB_OUTPUT"
           else
             echo "No reboot needed."
           fi
+
+      # A kernel or unit that fails to come up after the reboot must turn the deploy red
+      - name: Verify Server After Reboot
+        if: success() && steps.reboot.outputs.rebooted == 'true'
+        run: |
+          bash .github/scripts/wait-for-reboot.sh "$SERVER_IP"
+          bash .github/scripts/health-check.sh "$SERVER_IP"
