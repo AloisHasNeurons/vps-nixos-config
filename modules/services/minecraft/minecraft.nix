@@ -2,13 +2,7 @@
   # 1. Open the Gate (Firewall)
   networking.firewall.allowedTCPPorts = [25565];
 
-  # 2. Safety Net (Swap) - Vital for modded MC on limited RAM
-  swapDevices = [
-    {
-      device = "/var/lib/swapfile";
-      size = 4096;
-    }
-  ];
+  # 2. Safety Net (Swap): provided system-wide by zramSwap in configuration.nix
 
   # 3. Server Definition
   services.minecraft-servers = {

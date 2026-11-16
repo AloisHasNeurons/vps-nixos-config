@@ -53,6 +53,10 @@
   # nixpkgs bump temporarily needs room for two full system closures (~7.5 GB each)
   services.journald.settings.Journal.SystemMaxUse = "1G";
 
+  # Compressed swap in RAM (up to 50% of RAM before compression) instead of a
+  # 4 GB swapfile on the disk. Swap here is mostly cold pages, which compress well.
+  zramSwap.enable = true;
+
   # Utility to check if reboot is needed
   environment.systemPackages = [
     pkgs.dnsutils # for dig (used by post-deploy DNS smoke tests)
