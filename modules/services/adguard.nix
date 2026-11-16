@@ -59,13 +59,19 @@
         "||crapadouille.fr^$dnstype=A|AAAA,dnsrewrite=100.109.82.105"
       ];
 
+      # Fixed ids: with mutableSettings = false the config is regenerated on
+      # every start, and without an id AdGuard assigns a new one each time,
+      # re-downloading the lists to data/filters/<id>.txt and never deleting
+      # the old files (~1 GB had piled up).
       filters = [
         {
+          id = 1;
           enabled = true;
           url = "https://big.oisd.nl";
           name = "OISD Big";
         }
         {
+          id = 2;
           enabled = true;
           url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt";
           name = "HaGeZi Pro"; # Backup list for redundancy
