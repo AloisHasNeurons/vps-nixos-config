@@ -18,14 +18,33 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get pre-update flake.lock
+      - name: Check out pre-update revision
+        run: git worktree add /tmp/base "origin/${{ github.event.pull_request.base.ref }}"
+
+      # Both system closures (~7.5 GB each) have to fit on the runner
+      - name: Free disk space
         run: |
-          git show "origin/${{ github.event.pull_request.base.ref }}:flake.lock" > /tmp/base-flake.lock
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v23
+
+      # Read-only: don't push gigabytes of nixpkgs paths to Cachix from this job
+      - name: Cachix
+        uses: cachix/cachix-action@v17
+        with:
+          name: ${{ vars.CACHIX_CACHE_NAME }}
+          skipPush: true
 
       - name: Build summary
+        shell: bash # -eo pipefail: fail the step if a script fails mid-pipe
         run: |
-          chmod +x .github/scripts/flake-lock-diff.sh
-          .github/scripts/flake-lock-diff.sh /tmp/base-flake.lock flake.lock | tee /tmp/summary.md >> "$GITHUB_STEP_SUMMARY"
+          {
+            bash .github/scripts/flake-lock-diff.sh /tmp/base/flake.lock flake.lock
+            echo
+            bash .github/scripts/system-diff.sh /tmp/base .
+          } | tee /tmp/summary.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment on PR
         uses: marocchino/sticky-pull-request-comment@v3.0.5

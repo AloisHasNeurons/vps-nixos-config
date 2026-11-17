@@ -8,7 +8,7 @@ on:
         required: false
   schedule:
     # Off the hour: GitHub delays top-of-the-hour cron jobs the most
-    - cron: "17 1 * * *"
+    - cron: "22 22 * * *"
 
 jobs:
   renovate:
