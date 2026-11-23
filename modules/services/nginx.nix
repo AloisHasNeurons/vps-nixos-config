@@ -9,7 +9,6 @@ in {
       # The wildcard only covers one level: share.photos needs its own name
       extraDomainNames = ["*.${domain}" "share.photos.${domain}"];
       dnsProvider = "ovh";
-      dnsPropagationCheck = true;
       # The server resolves through Tailscale DNS, i.e. its own AdGuard, which
       # rewrites our domain. Use public DNS so the zone lookup sees the real zone.
       dnsResolver = "1.1.1.1:53";
