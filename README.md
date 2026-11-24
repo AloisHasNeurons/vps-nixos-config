@@ -20,122 +20,156 @@
 </p>
 
 <p align="center">
-  This repository represents the culmination of my journey into modern <b>DevOps, Systems Engineering, and SRE</b> principles. It is a fully declarative, reproducible, and verifiable server configuration built with NixOS and Terraform.
+  A fully declarative, reproducible and tested server configuration, built with <b>NixOS</b>, <b>Terraform</b> and <b>GitHub Actions</b>. It runs my self-hosted services (photos, recipes, DNS filtering) on a Hetzner Cloud VPS, with monitoring, alerting and backups defined in the same repository.
   <br />
   <br />
-  <a href="#-the-challenge"><strong>The Challenge</strong></a>
+  <a href="#why"><strong>Why</strong></a>
   ·
-  <a href="#-the-solution"><strong>The Solution</strong></a>
+  <a href="#whats-running"><strong>Services</strong></a>
   ·
-  <a href="#-uptime-monitoring"><strong>Uptime Monitoring</strong></a>
+  <a href="#observability"><strong>Observability</strong></a>
   ·
-  <a href="#-observability--monitoring"><strong>Observability</strong></a>
+  <a href="#security"><strong>Security</strong></a>
   ·
-  <a href="#-gitops--automation"><strong>GitOps</strong></a>
-  ·
-  <a href="#-security--continuous-verification"><strong>Security</strong></a>
+  <a href="#cicd--gitops"><strong>CI/CD</strong></a>
   ·
   <a href="#backups--disaster-recovery"><strong>Backups</strong></a>
+  ·
+  <a href="#usage"><strong>Usage</strong></a>
+</p>
+
+<p align="center">
+  <img src="img/dashboard.png" alt="Glance start page with the service status, photo and DNS stats, and embedded Grafana panels" width="900">
 </p>
 
 ---
 
-## The Challenge
+## Why
 
-Managing servers manually ("ClickOps") or via imperative scripts (Bash/Ansible) often leads to **Configuration Drift**. Over time, the state of the server diverges from the documentation, making updates terrifying and rollbacks impossible.
+Managing servers by hand ("ClickOps") or with imperative scripts leads to **configuration drift**: over time the server stops matching the documentation, updates become scary and rollbacks impossible. I wanted a system where:
 
-I wanted to solve the "Fear of Updates." I wanted a system where:
-1.  **Destruction is trivial**: I can delete the server right now and have it back online, with a different cloud provider, or in my bedroom, in 10 minutes, exactly as it was.
-2.  **Security is proved**: I don't just *hope* I closed the firewall ports; my CI pipeline *proves* it before I deploy.
-3.  **Maintenance is automated**: Dependency updates should be mundane, not special events.
+1. **Destruction is trivial**: the server can be deleted and brought back, on another provider if needed, from what is in this repository plus the backups.
+2. **Security is proved**: CI boots the real configuration in a VM and port-scans it before anything is deployed.
+3. **Maintenance is automated**: dependency updates arrive as pull requests, are tested, and deploy themselves.
 
-## The Solution
+The setup is split in two layers:
 
-To achieve this, I adopted a strict **Infrastructure as Code (IaC)** philosophy, separating the concern into distinct layers:
-
-### 1. The Infrastructure Layer (Terraform)
-I treat the server hardware as disposable. Using **Terraform** with the **Hetzner Cloud** provider, I define the physical resources (Servers, SSH Keys, Volumes).
-*   **Why?** Terraform tracks the state of the cloud resources. If I change the server type in `main.tf`, Terraform handles the complex replacement logic automatically.
-
-### 2. The Configuration Layer (NixOS)
-Once the hardware exists, **NixOS** takes over. Unlike traditional distros, NixOS is declarative.
-*   **Why?** I don't write scripts to *change* the system state (e.g., `apt-get install nginx`). I define the *final* state (e.g., `services.nginx.enable = true`). Nix ensures the reality matches the definition, atomically and reliably.
+- **Infrastructure (Terraform):** the Hetzner Cloud server (`cx33` in `fsn1`, with delete/rebuild protection and Hetzner backups), its SSH key, and the external uptime check on AWS. State is kept in HCP Terraform.
+- **Configuration (NixOS):** everything on the machine, from disk layout ([disko](https://github.com/nix-community/disko)) to services, users and firewall. I describe the final state, and `nixos-rebuild` makes the system match it atomically. Every deploy is a new boot generation, so `nixos-rebuild switch --rollback` reverts the whole system.
 
 ---
 
-## Multi-Cloud Serverless Uptime Monitoring
+## What's running
 
-To guarantee high availability and instant incident response, this configuration features a custom **Stateful Multi-Cloud Uptime Monitoring** architecture. Rather than running a monitoring agent on the VPS itself (which goes silent when the host crashes), we check the host externally using serverless platforms.
+| Service | What it does | Exposure |
+|---------|--------------|----------|
+| [Immich](https://immich.app/) | Photo and video library, with machine learning (faces, smart search) | Tailnet only |
+| [Immich Public Proxy](https://github.com/alangrainger/immich-public-proxy) | Serves Immich shared links without exposing Immich itself | **Public** (`share.photos.*`) |
+| [Tandoor](https://tandoor.dev/) | Recipe manager | Tailnet only |
+| [AdGuard Home](https://adguard.com/adguard-home/overview.html) | DNS filtering for the tailnet (OISD, HaGeZi lists), DNS-over-HTTPS upstreams, rewrites the domain to the Tailscale IP | Tailnet only |
+| [Glance](https://github.com/glanceapp/glance) | Start page: service status, photo and DNS stats, Grafana panels | Tailnet only |
+| Grafana · Prometheus · Alertmanager | Metrics, dashboards and alerts | Tailnet only |
+| Nginx | Reverse proxy with a wildcard Let's Encrypt certificate (DNS-01 via OVH) | Ports 80/443 |
+| PostgreSQL | Databases for Immich and Tandoor | Loopback |
 
-*   **AWS Monitoring:** An AWS Lambda function is scheduled to run every **1 minute** via EventBridge. It tracks the previous state (`UP` or `DOWN`) in the **AWS SSM Parameter Store**.
-*   **Azure Monitoring:** An Azure Function App is scheduled to run every **1 minute** via a Timer Trigger. It tracks the previous state in an **Azure Storage Account blob**.
-*   **Telegram Webhook Bridge:** When either cloud detects a state transition (`UP ➔ DOWN` or `DOWN ➔ UP`), it pushes a detailed message directly to a Telegram bot.
-*   **Detailed Failure Analysis:** Unlike generic CloudWatch or Azure Metric alerts, the Go code pings the host and returns the **exact connection failure reason or HTTP status code** (e.g. `connect: connection refused` or `502 Bad Gateway`) directly inside the Telegram notification.
+Every service listens on `127.0.0.1` and is reached through Nginx. Apart from the photo-sharing proxy, every virtual host only accepts clients from the Tailscale range (`100.64.0.0/10`).
 
----
-
-## GitOps & Automated Maintenance vs Toil
-
-A key SRE principle is eliminating toil. I implemented a **GitOps workflow** to handle system updates automatically using **Renovate Bot**.
-
-**The Workflow:**
-1.  **Scan:** Renovate scans my `flake.nix` for outdated inputs (NixOS system updates) or dependencies.
-2.  **PR:** It opens a Pull Request automatically (e.g., *"Update NixOS to 25.05"*).
-3.  **Verify:** GitHub Actions CI runs the full test suite (including the [security scanner](#-security--continuous-verification)).
-4.  **Merge & Deploy:** Once merged, the CD pipeline automatically deploys the update.
-
-**The Safety Net:**
-*   **Atomic Updates:** If the build fails on the server, the switch is aborted. The system is never left in a broken state.
-*   **Rollbacks:** Every deployment creates a new boot generation. If a service behaves incorrectly, a single command (`nixos-rebuild switch --rollback`) instantaneously reverts the entire system state.
+**Kept but not deployed:**
+- A Fabric **Minecraft** server ([nix-minecraft](https://github.com/Infinidoge/nix-minecraft)), behind `my.minecraft.enable`. CI still evaluates it (`minecraft-eval` check) so it doesn't rot.
+- A **media suite** (Jellyfin, Sonarr, Radarr, Prowlarr, Jellyseerr, seedbox over SSHFS) in `modules/media/`, not imported for now.
 
 ---
 
-## Observability & Monitoring
+## Observability
 
-You can't manage what you can't measure. I integrated a full monitoring stack to ensure system health and performance visibility.
+The screenshot above is the [Glance](https://github.com/glanceapp/glance) start page at `home.<domain>`. The left column comes from Glance itself (clock, service monitor, Immich stats, AdGuard stats). The rest are Grafana panels embedded as iframes:
 
-*   **Prometheus:** Scrapes metrics from system services (`node_exporter`) and applications.
-*   **Grafana:** Visualizes these metrics in a unified dashboard.
-*   **Glance:** A central start page with service status, photo and DNS stats, and the key Grafana panels.
-*   **System Alerts:** Any systemd unit failure triggers an automatic Telegram webhook alert containing the last 5 log lines of the crashed service.
+- **Status row** (custom `VPS Services` dashboard, written in Nix in [`modules/monitoring/dashboards/vps-services.nix`](modules/monitoring/dashboards/vps-services.nix)): HTTPS probe result per site, earliest certificate expiry, age of the last Postgres and restic backups, failed systemd units, firing alerts.
+- **System row** ([Node Exporter Full](https://grafana.com/grafana/dashboards/1860), pinned by hash): CPU, memory, network traffic, disk space.
+- **Services row** (`VPS Services` again): response time per site, Nginx requests per second, database sizes.
+
+Grafana dashboards and datasources are provisioned from git, so edits made in the UI can't be saved.
+
+### Metrics
+
+Prometheus (15 s scrape, 30 days or 5 GB of retention) scrapes:
+
+- `node_exporter`, with the `systemd` and `processes` collectors and a textfile directory where the backup jobs record their last success;
+- the `blackbox` exporter, which probes every site over HTTPS as a tailnet client sees it (so a bad or missing certificate fails the probe) and checks that AdGuard still rewrites the domain to the Tailscale IP;
+- the `nginx` and `postgres` exporters, plus Prometheus, Alertmanager and Grafana themselves.
+
+### Alerts
+
+Everything ends up in Telegram, through three independent paths:
+
+| Path | Catches |
+|------|---------|
+| **Prometheus → Alertmanager** | Scrape target down, site failing its probe, certificate expiring within 21 days, DNS rewrite broken, disk over 85 % or filling up within 24 h, memory under 10 %, failed systemd unit, backup older than 26 h or never recorded |
+| **`notify-failure@` systemd unit** | Any hooked service that fails (Nginx, AdGuard, Immich, Prometheus, Alertmanager, backups, ACME renewals...). The message includes the last 5 log lines. It still works when Alertmanager itself is down. |
+| **AWS Lambda uptime check** | The whole server being unreachable, which the two paths above can't report |
+
+### External uptime check
+
+An agent running on the VPS goes silent when the VPS does, so the last path runs outside it. A Go [AWS Lambda](terraform/src/aws_health_check/main.go), triggered every minute by EventBridge, requests the server over HTTP. It keeps the last state (`UP`/`DOWN`) in SSM Parameter Store and only sends a Telegram message on a transition, including the exact failure (e.g. `connect: connection refused` or `502 Bad Gateway`).
+
+An Azure Functions version of the same check is still in the repository ([`terraform/monitoring_azure.tf`](terraform/monitoring_azure.tf), [`src/azure_health_check`](terraform/src/azure_health_check)) but commented out.
 
 ---
 
-## Security & Continuous Verification
+## Security
 
-A unique feature of this project is the **Forward-Compatible Security Scanner**.
+### Network exposure
 
-Most security setups rely on manual periodic audits. I automated this by writing a custom **NixOS Integration Test** that runs inside the GitHub Actions CI pipeline.
+- **Firewall:** only TCP 22, 80 and 443 are open publicly, plus Tailscale's UDP port. `tailscale0` is a trusted interface.
+- **Tailnet-only services:** admin interfaces and personal services are only reachable over [Tailscale](https://tailscale.com/). AdGuard serves the tailnet's DNS and rewrites `*.<domain>` to the server's Tailscale IP, so the same hostnames and certificate work everywhere.
+- **Public surface:** only the Immich Public Proxy, which can't reach anything but Immich over loopback (`RestrictNetworkInterfaces=lo`).
 
-### The "Default Deny" Scanner
-Before any code is merged, the CI system:
-1.  **Boots a VM** with the exact production configuration.
-2.  **Simulates an Attack**: A secondary attacker machine runs an `nmap` scan against the VM.
-3.  **Audits Ports**: It acts as a whitelist. If *any* port is found open that isn't explicitly allowed (SSH/22, HTTP/80, HTTPS/443), the **pipeline fails**.
+### Host hardening
 
-> **Result:** It is impossible for me to accidentally expose an internal service (like the `Grafana` or `Adguard` admin panel) to the public internet. The bad deploy is blocked before it ever leaves git.
+- **SSH:** keys only, no root login, `AllowUsers` limited to two accounts, short grace time and max 3 auth tries, no agent or TCP forwarding. **Fail2ban** bans repeat offenders, with ban time increasing up to a week.
+- **Users:** `mutableUsers = false`, root password disabled, sudo requires a password (except for the CI `deploy` user).
+- **Kernel:** latest kernel, AppArmor, sysctl hardening (`kptr_restrict`, `dmesg_restrict`, no ICMP redirects, SYN cookies...).
+- **Nginx:** HSTS with preload, `nosniff`, a Content Security Policy.
+- **Secrets:** encrypted with [agenix](https://github.com/ryantm/agenix) and committed to git, decrypted at boot with the server's SSH host key. Gitleaks scans every push and pull request.
+
+### The "default deny" port scanner
+
+[`tests/security.nix`](tests/security.nix) is a NixOS integration test that runs in CI before anything is merged or deployed:
+
+1. It boots a VM with the production configuration.
+2. A second VM runs `nmap` against it.
+3. Any open port other than 22, 80 and 443 **fails the pipeline**. It also checks explicitly that the photo-sharing proxy's port, which is outside nmap's top 1000, stays unreachable.
+
+> **Result:** an internal service (Grafana, AdGuard...) can't be exposed to the internet by mistake. The bad change is blocked before it leaves git.
 
 ---
 
-## Architecture & Tech Stack
+## CI/CD & GitOps
 
-This stack is designed to be a comprehensive, self-hosted ecosystem.
+### Pull requests
 
-### Core Stack
-*   **OS & Deployment:** `NixOS` (Unstable) + `Nix Flakes`
-*   **Provisioning:** `Terraform` + `HCP Terraform` (Terraform Cloud)
-*   **Secret Management:** `Agenix` (Age-encrypted secrets stored in Git)
-*   **CI/CD:** `GitHub Actions`
-*   **Maintenance:** `Renovate Bot`
+| Workflow | Does |
+|----------|------|
+| **CI - Nix** | `nix fmt --check` (alejandra), `deadnix`, flake evaluation, then one runner per check: the `security` port scan, the `services` test (every unit starts, listens on its port, answers on its virtual host, SSH settings are enforced, DNS rewrites behave, exporters report) and `minecraft-eval`. Builds are cached in Cachix. |
+| **CI - Terraform** | Builds the Lambda, then `terraform fmt -check` and `terraform validate`. |
+| **CI - Security** | Gitleaks over the whole history. |
+| **Flake lock diff** | On `flake.lock` changes, builds the old and new systems and posts a comment listing the input and package version changes. |
 
-### Hosted Services
-*   **Networking:** Tailscale Mesh VPN + NFTables (Masquerading)
-*   **Reverse Proxy:** Nginx (ACME/Let's Encrypt)
-*   **Observability:** Grafana + Prometheus
-*   **Media & Storage:** Immich (Self-hosted Photos/Videos)
-*   **DNS Filtering:** AdGuard Home
-*   **Dashboard:** Glance (Service Status & Grafana Panels)
-*   **Recipe manager:** Tandoor
+### Renovate
+
+[Renovate](https://docs.renovatebot.com/) runs daily from a GitHub Action. Flake inputs, GitHub Actions, Terraform providers and Go modules are kept up to date. `flake.lock` maintenance, minor/patch updates and security fixes are **merged automatically** once CI passes. Major updates wait for review.
+
+### Deployment
+
+Every push to `master` (except docs-only changes) runs [`deploy.yml`](.github/workflows/deploy.yml):
+
+1. Run both CI workflows again.
+2. `terraform apply`, only if `terraform/` changed.
+3. Copy the repository to the server over SSH (host key pinned from `secrets/vps-host-key.pub`) and run `nixos-rebuild switch`. If the build fails, the running system is left untouched.
+4. Smoke tests: Tailscale is up, conntrack doesn't drop packets, AdGuard resolves upstream, then [`health-check.sh`](.github/scripts/health-check.sh) checks the services.
+5. If the kernel changed, reboot and run the health checks again. A server that doesn't come back turns the deploy red.
+
+A manual **Server Reboot** workflow does the same reboot and checks on demand.
 
 ---
 
@@ -258,28 +292,67 @@ There are two ways to bring the server back. Neither has been rehearsed end-to-e
 
 ---
 
-## Usage & Deployment
+## Usage
 
-Deployments to the server are fully automated via GitHub Actions when pushing to `master`.
-
-### Local Testing
-You can run the full test suite locally without touching the real server:
+Deployment is automatic on push to `master`. Locally:
 
 ```bash
-# Run the security integration test (boots a VM)
+# Run the checks: both VM tests and the Minecraft evaluation
 nix flake check
 
-# Build a local VM for manual testing
+# Run a single VM test
+nix build -L .#checks.x86_64-linux.security
+
+# Build and start a local VM of the server
+# (forwards SSH to 12222, HTTP to 18080, HTTPS to 18443, AdGuard to 13000, Glance to 13001)
 nix run .#vps-vm
+
+# Format
+nix fmt
 ```
 
-### Manual Infrastructure Deployment (Terraform)
-If you need to provision or edit infrastructure manually:
+### Terraform
+
+Provisioning normally runs in CI. To run it by hand:
 
 ```bash
+cp .env.example .env   # fill in TF_VAR_hcloud_token
+source .env
 cd terraform
-nix develop ../#default --impure -c terraform init
-nix develop ../#default --impure -c terraform apply
+nix develop ..#default --impure -c terraform init
+nix develop ..#default --impure -c terraform apply
+```
+
+### Secrets
+
+Secrets are declared in [`secrets/secrets.nix`](secrets/secrets.nix). To edit one, or re-encrypt all of them after a key change:
+
+```bash
+cd secrets
+nix develop ..#default -c agenix -e restic-env.age
+nix develop ..#default -c agenix -r
+```
+
+---
+
+## Repository layout
+
+```
+.
+├── flake.nix                 # Inputs, the `vps` system, checks, dev shell, local VM
+├── configuration.nix         # Boot, users, SSH, firewall, fail2ban, agenix secrets
+├── disk-config.nix           # Disk layout (disko)
+├── modules/
+│   ├── monitoring/           # Prometheus, Alertmanager, Grafana, alert rules, dashboards
+│   ├── networking/           # Tailscale, static IPv6
+│   ├── services/             # Immich, Tandoor, AdGuard, Glance, Nginx, backups, Minecraft
+│   ├── system/               # Kernel hardening, shell
+│   └── media/                # Media suite (not imported)
+├── tests/                    # NixOS VM tests: security port scan, services
+├── secrets/                  # agenix-encrypted secrets and public keys
+├── terraform/                # Hetzner server, AWS uptime check (+ Go sources)
+├── .github/                  # Workflows and their helper scripts
+└── renovate.json
 ```
 
 ---
